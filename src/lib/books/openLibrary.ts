@@ -146,7 +146,9 @@ export function coverUrl(coverId: number, size: CoverSize = 'M'): string {
 export function rankSearchDocs(docs: RawSearchDoc[]): RawSearchDoc[] {
   const isEstablished = (d: RawSearchDoc) => Boolean(d.cover_i) || (d.edition_count ?? 0) >= 3;
   const looksDerivative = (d: RawSearchDoc) =>
-    /^(summary|study guide|analysis|workbook|sparknotes|cliffsnotes)\b/i.test(d.title ?? '');
+    /\b(summary|summaries|study guide|workbook|sparknotes|cliffsnotes|trivia)\b|^(analysis|conversations) (of|on)\b/i.test(
+      d.title ?? '',
+    );
   const tier = (d: RawSearchDoc) => (looksDerivative(d) ? 2 : isEstablished(d) ? 0 : 1);
   return docs
     .map((doc, index) => ({ doc, index, tier: tier(doc) }))

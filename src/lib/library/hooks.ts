@@ -2,19 +2,18 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 
 import { openLibrary, type BookSearchResult } from '@/lib/books/openLibrary';
-import { useUserId } from '@/lib/auth/session';
+import type { CategorySlug } from '@/lib/catalog/categories';
+import type { Bucket } from '@/lib/ranking';
 
-import {
-  fetchCatalogBookByWork,
-  fetchEntryForWork,
-  fetchLibrary,
-  setShelf,
-  type ReadingStatus,
-} from './api';
+import { useBackend } from './backend';
+import type { RankInput, ReadingStatus } from './types';
 
 export const queryKeys = {
-  library: (userId: string) => ['library', userId] as const,
-  entry: (userId: string, workKey: string) => ['library', userId, 'entry', workKey] as const,
+  /** Everything about the user's library; invalidate this after any write. */
+  library: ['library'] as const,
+  entries: () => ['library', 'entries'] as const,
+  entry: (workKey: string) => ['library', 'entry', workKey] as const,
+  rankedList: (category: CategorySlug, bucket: Bucket) => ['library', 'ranked', category, bucket] as const,
   search: (query: string) => ['search', query] as const,
   book: (workKey: string) => ['book', workKey] as const,
   work: (workKey: string) => ['work', workKey] as const,
@@ -48,9 +47,10 @@ export function useBookSearch(query: string) {
  * into the cache by the search screen), else from our catalog.
  */
 export function useBook(workKey: string) {
+  const backend = useBackend();
   return useQuery({
     queryKey: queryKeys.book(workKey),
-    queryFn: () => fetchCatalogBookByWork(workKey),
+    queryFn: () => backend.fetchCatalogBookByWork(workKey),
     staleTime: Infinity,
   });
 }
@@ -69,24 +69,40 @@ export function useWorkDetails(workKey: string) {
 }
 
 export function useLibrary() {
-  const userId = useUserId();
-  return useQuery({ queryKey: queryKeys.library(userId), queryFn: () => fetchLibrary(userId) });
+  const backend = useBackend();
+  return useQuery({ queryKey: queryKeys.entries(), queryFn: () => backend.fetchLibrary() });
 }
 
 export function useLibraryEntry(workKey: string) {
-  const userId = useUserId();
-  return useQuery({
-    queryKey: queryKeys.entry(userId, workKey),
-    queryFn: () => fetchEntryForWork(userId, workKey),
-  });
+  const backend = useBackend();
+  return useQuery({ queryKey: queryKeys.entry(workKey), queryFn: () => backend.fetchEntryForWork(workKey) });
 }
 
 export function useSetShelf() {
-  const userId = useUserId();
+  const backend = useBackend();
   const client = useQueryClient();
   return useMutation({
     mutationFn: ({ book, status }: { book: BookSearchResult; status: ReadingStatus }) =>
-      setShelf(userId, book, status),
-    onSuccess: () => client.invalidateQueries({ queryKey: queryKeys.library(userId) }),
+      backend.setShelf(book, status),
+    onSuccess: () => client.invalidateQueries({ queryKey: queryKeys.library }),
+  });
+}
+
+export function useRankBook() {
+  const backend = useBackend();
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (input: RankInput) => backend.rankBook(input),
+    onSuccess: () => client.invalidateQueries({ queryKey: queryKeys.library }),
+  });
+}
+
+export function useSetChips() {
+  const backend = useBackend();
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ bookId, category, chips }: { bookId: string; category: CategorySlug; chips: string[] }) =>
+      backend.setChips(bookId, category, chips),
+    onSuccess: () => client.invalidateQueries({ queryKey: queryKeys.library }),
   });
 }

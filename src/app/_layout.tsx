@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 
 import { SessionProvider, useSession } from '@/lib/auth/session';
+import { BackendProvider } from '@/lib/library/backend';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -16,10 +17,12 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <SessionProvider>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <SplashScreenController />
-          <RootNavigator />
-        </ThemeProvider>
+        <BackendProvider>
+          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+            <SplashScreenController />
+            <RootNavigator />
+          </ThemeProvider>
+        </BackendProvider>
       </SessionProvider>
     </QueryClientProvider>
   );
@@ -38,8 +41,8 @@ function SplashScreenController() {
  * https://docs.expo.dev/router/advanced/protected/
  */
 function RootNavigator() {
-  const { session } = useSession();
-  const signedIn = Boolean(session);
+  const { userId } = useSession();
+  const signedIn = Boolean(userId);
 
   // Don't let one account's cached data show up for the next account.
   useEffect(() => {
@@ -51,6 +54,7 @@ function RootNavigator() {
       <Stack.Protected guard={signedIn}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="book/[workId]" options={{ title: '', headerBackTitle: 'Back' }} />
+        <Stack.Screen name="rank/[workId]" options={{ title: 'Rank', presentation: 'modal' }} />
       </Stack.Protected>
       <Stack.Protected guard={!signedIn}>
         <Stack.Screen name="sign-in" options={{ headerShown: false }} />

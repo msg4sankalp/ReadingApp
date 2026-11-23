@@ -1,4 +1,4 @@
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -6,9 +6,9 @@ import { ThemedText } from '@/components/themed-text';
 import { BookCover, Button, Centered, ErrorText, Screen } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { getCategory } from '@/lib/catalog/categories';
-import { SHELVES } from '@/lib/library/api';
-import { useBook, useLibraryEntry, useSetShelf, useWorkDetails, workKeyFromId } from '@/lib/library/hooks';
-import { formatScore } from '@/lib/ranking';
+import { SHELVES } from '@/lib/library/types';
+import { useBook, useLibrary, useLibraryEntry, useSetShelf, useWorkDetails, workKeyFromId } from '@/lib/library/hooks';
+import { formatScore, isProvisional } from '@/lib/ranking';
 
 export default function BookScreen() {
   const { workId } = useLocalSearchParams<{ workId: string }>();
@@ -17,8 +17,10 @@ export default function BookScreen() {
   const book = useBook(workKey);
   const details = useWorkDetails(workKey);
   const entry = useLibraryEntry(workKey);
+  const library = useLibrary();
   const setShelf = useSetShelf();
   const [expanded, setExpanded] = useState(false);
+  const openRanking = () => router.push({ pathname: '/rank/[workId]', params: { workId } });
 
   if (book.isPending) {
     return (
@@ -45,6 +47,16 @@ export default function BookScreen() {
 
   const b = book.data;
   const currentStatus = entry.data?.status ?? null;
+  const ranked = entry.data && entry.data.score !== null ? entry.data : null;
+  const rankedInGenre = ranked
+    ? (library.data ?? []).filter((e) => e.category === ranked.category && e.score !== null).length
+    : 0;
+  const chipLabels =
+    ranked?.category
+      ? getCategory(ranked.category)
+          .chips.filter((c) => ranked.chips.includes(c.slug))
+          .map((c) => c.label)
+      : [];
   const description = details.data?.description;
 
   return (
@@ -79,18 +91,39 @@ export default function BookScreen() {
               disabled={setShelf.isPending || entry.isPending}
               style={styles.shelfButton}
               onPress={() =>
-                setShelf.mutate({ book: b, status: shelf.status }, { onSuccess: () => entry.refetch() })
+                setShelf.mutate(
+                  { book: b, status: shelf.status },
+                  {
+                    onSuccess: () => {
+                      entry.refetch();
+                      // Finishing a book goes straight into ranking it.
+                      if (shelf.status === 'read' && currentStatus !== 'read') openRanking();
+                    },
+                  },
+                )
               }
             />
           ))}
         </View>
         {setShelf.isError ? <ErrorText error={setShelf.error} /> : null}
-        {entry.data?.score !== null && entry.data?.score !== undefined ? (
-          <ThemedText type="smallBold">Your score: {formatScore(Number(entry.data.score))}</ThemedText>
+        {ranked && ranked.category ? (
+          <View style={styles.rankedBox}>
+            <View style={styles.flex}>
+              <ThemedText style={styles.score}>{formatScore(ranked.score!, isProvisional(rankedInGenre))}</ThemedText>
+              <ThemedText type="small" themeColor="textSecondary">
+                #{ranked.rankPosition! + 1} in {getCategory(ranked.category).name} ·{' '}
+                {{ liked: 'Liked', fine: 'Fine', disliked: "Didn't like" }[ranked.bucket!]}
+              </ThemedText>
+              {chipLabels.length > 0 ? (
+                <ThemedText type="small" themeColor="textSecondary">
+                  {chipLabels.join(' · ')}
+                </ThemedText>
+              ) : null}
+            </View>
+            <Button variant="secondary" label="Re-rank" onPress={openRanking} />
+          </View>
         ) : currentStatus === 'read' ? (
-          <ThemedText type="small" themeColor="textSecondary">
-            Not ranked yet. Ranking is coming in the next update.
-          </ThemedText>
+          <Button label="Rank this book" onPress={openRanking} />
         ) : null}
 
         {description ? (
@@ -120,4 +153,7 @@ const styles = StyleSheet.create({
   shelfButton: { flex: 1, paddingHorizontal: Spacing.one },
   description: { gap: Spacing.one },
   more: { alignSelf: 'flex-start', paddingHorizontal: 0 },
+  rankedBox: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
+  score: { fontSize: 32, lineHeight: 38, fontWeight: 800 },
+  flex: { flex: 1 },
 });

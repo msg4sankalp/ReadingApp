@@ -202,9 +202,10 @@ never sends inconsistent positions.
 ### Phase 1: Personal library (the MVP)
 - [x] Book search screen and book detail screen
 - [x] Shelves: Want to Read / Reading / Read
-- [ ] Comparison flow: category confirm, bucket picker, head-to-head cards, insertion, chips
-- [ ] "My Rankings" screen: per-genre lists, plus an "All books" view; provisional-score badges
-- [ ] Profile screen with basic stats
+- [x] Comparison flow: category confirm, bucket picker, head-to-head cards, insertion, chips
+- [x] "My Rankings" screen: per-genre lists, plus an "All books" view; provisional-score badges
+- [x] Profile screen with basic stats
+- [x] Demo mode with a sample library, for testing the concept without accounts
 - [ ] Ship to about 10–20 readers through TestFlight or Expo internal distribution
 
 ### Phase 2: Social

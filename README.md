@@ -14,8 +14,9 @@ for book data.
 src/app/                  Screens (Expo Router: every file is a route)
   _layout.tsx             Root: data cache, auth session, signed-in/out route protection
   sign-in.tsx             Email + password sign-in and sign-up
-  (tabs)/                 Library, Search and Profile tabs (native tab bar)
-  book/[workId].tsx       Book page: details, description, shelf buttons
+  (tabs)/                 Library, Rankings, Search and Profile tabs (native tab bar)
+  book/[workId].tsx       Book page: details, description, shelf buttons, score
+  rank/[workId].tsx       Ranking flow: genre → feeling → head-to-head → score + reasons
 src/components/           Shared UI (buttons, text fields, book rows and covers)
 src/lib/ranking/          Ranking engine: binary-insertion sessions and score formula
 src/lib/catalog/          Ranking categories (genres), "what made it work?" chips,
@@ -23,7 +24,8 @@ src/lib/catalog/          Ranking categories (genres), "what made it work?" chip
 src/lib/books/            Open Library client
 src/lib/supabase/         Supabase client
 src/lib/auth/             Sign-in session context
-src/lib/library/          Shelves and catalog: database calls and data hooks
+src/lib/library/          Library data: backend interface, Supabase backend, data hooks
+src/lib/demo/             Demo mode: on-device backend and sample library
 supabase/migrations/      Database schema, Row Level Security and ranking functions
 supabase/seed.sql         Categories and chips (must match src/lib/catalog/categories.ts)
 ```
@@ -47,6 +49,14 @@ supabase/seed.sql         Categories and chips (must match src/lib/catalog/categ
    ```bash
    npx expo start
    ```
+
+## Demo mode
+
+With no Supabase project configured (or with `EXPO_PUBLIC_DEMO_MODE=1` in `.env`),
+the app runs in **demo mode**: no sign-in, data stays on the device, and it
+starts with a sample library of about 30 real books already ranked across
+several genres (`src/lib/demo/seedData.ts`). Search still uses Open Library, so
+you can add any book. Profile → **Reset demo data** restores the sample library.
 
 ## Setting up the database (Supabase)
 

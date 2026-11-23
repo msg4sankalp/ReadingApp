@@ -16,7 +16,7 @@ import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 export function Screen({
@@ -30,7 +30,9 @@ export function Screen({
 }) {
   return (
     <ThemedView style={styles.screen}>
-      <SafeAreaView edges={edges} style={[styles.screenInner, style]}>
+      <SafeAreaView
+        edges={edges}
+        style={[styles.screenInner, edges.includes('top') && { paddingTop: TopTabInset }, style]}>
         {children}
       </SafeAreaView>
     </ThemedView>

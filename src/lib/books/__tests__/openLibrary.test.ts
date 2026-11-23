@@ -61,6 +61,22 @@ describe('search', () => {
     expect(keys).toEqual(['/works/OL17930367W', '/works/OL4W', '/works/OL29922995W', '/works/OL25607554W']);
   });
 
+  it('recognizes knockoff titles wherever the giveaway word appears', async () => {
+    // Real titles from searching "The Martian Andy Weir", plus two real books that must not be demoted.
+    const titles = [
+      "Andy Weir's the Martian Summary and Review",
+      'Trivia : the Martian',
+      'Conversations on the Martian',
+      '15-Minute Summary and Analysis of Andy Weir\'s the Martian',
+      'The Analysis of Mind',
+      'Conversations with Friends',
+    ];
+    const docs = titles.map((title, i) => ({ key: `/works/OL${i + 1}W`, title, cover_i: 1, edition_count: 10 }));
+    const client = createOpenLibraryClient({ fetchImpl: mockFetch({ docs }) });
+    const ordered = (await client.search('martian')).map((b) => b.title);
+    expect(ordered.slice(0, 2)).toEqual(['The Analysis of Mind', 'Conversations with Friends']);
+  });
+
   it('skips the network for queries shorter than 2 characters', async () => {
     const fetchImpl = mockFetch({ docs: [] });
     const client = createOpenLibraryClient({ fetchImpl });

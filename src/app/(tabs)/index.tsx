@@ -5,7 +5,7 @@ import { ActivityIndicator, RefreshControl, SectionList, StyleSheet, View } from
 import { ThemedText } from '@/components/themed-text';
 import { BookRow, Button, Centered, ErrorText, Screen } from '@/components/ui';
 import { BottomTabInset, Spacing } from '@/constants/theme';
-import { SHELVES, type LibraryEntry } from '@/lib/library/api';
+import { SHELVES, type LibraryEntry } from '@/lib/library/types';
 import { useLibrary, workIdFromKey } from '@/lib/library/hooks';
 import { formatScore } from '@/lib/ranking';
 
@@ -45,7 +45,7 @@ export default function LibraryScreen() {
     <Screen>
       <SectionList
         sections={sections}
-        keyExtractor={(e) => e.book.id}
+        keyExtractor={(e) => e.bookId}
         stickySectionHeadersEnabled={false}
         refreshControl={<RefreshControl refreshing={library.isRefetching} onRefresh={() => { library.refetch(); }} />}
         contentContainerStyle={{ paddingBottom: BottomTabInset + Spacing.three, flexGrow: 1 }}
@@ -77,15 +77,17 @@ function LibraryRow({ entry }: { entry: LibraryEntry }) {
     <BookRow
       title={book.title}
       authors={book.authors}
-      coverUrl={book.cover_url}
-      detail={entry.status === 'read' && entry.score === null ? 'Not ranked yet' : null}
+      coverUrl={book.coverUrl}
+      detail={entry.status === 'read' && entry.score === null ? 'Not ranked yet: tap to rank' : null}
       trailing={
-        entry.score !== null ? <ThemedText type="smallBold">{formatScore(Number(entry.score))}</ThemedText> : null
+        entry.score !== null ? <ThemedText type="smallBold">{formatScore(entry.score)}</ThemedText> : null
       }
-      onPress={() =>
-        book.open_library_key &&
-        router.push({ pathname: '/book/[workId]', params: { workId: workIdFromKey(book.open_library_key) } })
-      }
+      onPress={() => {
+        if (!book.openLibraryKey) return;
+        const workId = workIdFromKey(book.openLibraryKey);
+        if (entry.status === 'read' && entry.score === null) router.push({ pathname: '/rank/[workId]', params: { workId } });
+        else router.push({ pathname: '/book/[workId]', params: { workId } });
+      }}
     />
   );
 }
