@@ -218,6 +218,15 @@ export function createSupabaseBackend(userId: string): LibraryBackend {
       if (error) throw error;
     },
 
+    async setDates(bookId, { startedAt, finishedAt }) {
+      const { error } = await supabase
+        .from('user_books')
+        .update({ started_at: startedAt, finished_at: finishedAt })
+        .eq('user_id', userId)
+        .eq('book_id', bookId);
+      if (error) throw error;
+    },
+
     async setChips(bookId, category, chipSlugs) {
       const { error: deleteError } = await supabase
         .from('user_book_chips')

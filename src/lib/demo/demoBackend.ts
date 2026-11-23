@@ -283,6 +283,14 @@ export function createDemoBackend(
       save();
     },
 
+    async setDates(bookId, { startedAt, finishedAt }) {
+      const e = state.entries[bookId];
+      if (!e) throw new Error(`Book ${bookId} is not in the library`);
+      e.startedAt = startedAt;
+      e.finishedAt = finishedAt;
+      save();
+    },
+
     reset() {
       state = createSeedState(now());
       save();

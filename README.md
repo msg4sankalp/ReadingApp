@@ -71,7 +71,8 @@ The app needs a Supabase project to sign in.
 2. In the project's **SQL Editor**, run these files in order:
    1. `supabase/migrations/20261123000000_initial_schema.sql`
    2. `supabase/migrations/20261123000001_explicit_grants.sql`
-   3. `supabase/seed.sql`
+   3. `supabase/migrations/20261124000000_midpoint_scores.sql`
+   4. `supabase/seed.sql`
 3. For development, turn off **Authentication → Sign In / Providers → Email →
    Confirm email**, so new accounts can sign in straight away.
 4. Copy `.env.example` to `.env` and fill in the project URL and the

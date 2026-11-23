@@ -41,9 +41,9 @@ describe('seed data', () => {
     const backend = createDemoBackend(memoryStorage());
     const library = await backend.fetchLibrary();
     const hailMary = library.find((e) => e.bookId === SFF_LIKED[0])!;
-    expect(hailMary.score).toBe(10);
+    expect(hailMary.score).toBe(9.7); // #1 of 5 liked
     const hobbit = library.find((e) => e.bookId === SFF_LIKED[SFF_LIKED.length - 1])!;
-    expect(hobbit.score).toBe(6.7);
+    expect(hobbit.score).toBe(7); // #5 of 5 liked
   });
 });
 
@@ -67,7 +67,7 @@ describe('ranking', () => {
     });
 
     expect((await backend.fetchRankedList('sff', 'liked')).map((b) => b.bookId)).toEqual(truth);
-    expect(score).toBe(9.3); // position 1 of 6: 10 - (1/5) * 3.3
+    expect(score).toBe(9.2); // #2 of 6: 10 - (1.5 / 6) * 3.3 = 9.175
     const snapshot = backend.snapshot();
     expect(snapshot.comparisons).toHaveLength(result.comparisons.length);
     expect(snapshot.entries[id].status).toBe('read');
@@ -126,6 +126,13 @@ describe('reading dates', () => {
       startedAt: '2026-11-01',
       finishedAt: '2026-11-23',
     });
+  });
+
+  it('saves edited dates', async () => {
+    const backend = createDemoBackend(memoryStorage());
+    await backend.setDates(SFF_LIKED[0], { startedAt: '2026-01-02', finishedAt: '2026-01-20' });
+    expect(await backend.fetchEntryForWork(SFF_LIKED[0])).toMatchObject({ startedAt: '2026-01-02', finishedAt: '2026-01-20' });
+    await expect(backend.setDates('/works/OL0W', { startedAt: null, finishedAt: null })).rejects.toThrow(/not in the library/);
   });
 
   it('seeds dates for the sample library', async () => {

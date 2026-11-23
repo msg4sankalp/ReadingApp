@@ -69,4 +69,6 @@ export interface LibraryBackend {
   rankBook(input: RankInput): Promise<number>;
   unrankBook(bookId: string): Promise<void>;
   setChips(bookId: string, category: CategorySlug, chipSlugs: string[]): Promise<void>;
+  /** Replace a book's start and finish dates ("YYYY-MM-DD" or null). */
+  setDates(bookId: string, dates: { startedAt: string | null; finishedAt: string | null }): Promise<void>;
 }

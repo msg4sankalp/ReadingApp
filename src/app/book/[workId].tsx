@@ -2,11 +2,11 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 
+import { ReadingDatesCard } from '@/components/reading-dates-card';
 import { ThemedText } from '@/components/themed-text';
 import { BookCover, Button, Centered, ErrorText, Screen } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { getCategory } from '@/lib/catalog/categories';
-import { describeReadingDates } from '@/lib/library/readingDates';
 import type { ReadingStatus } from '@/lib/library/types';
 import { useBook, useLibrary, useLibraryEntry, useSetShelf, useWorkDetails, workKeyFromId } from '@/lib/library/hooks';
 import { formatScore, isProvisional } from '@/lib/ranking';
@@ -114,11 +114,7 @@ export default function BookScreen() {
           ))}
         </View>
         {setShelf.isError ? <ErrorText error={setShelf.error} /> : null}
-        {entry.data && describeReadingDates(entry.data) ? (
-          <ThemedText type="small" themeColor="textSecondary">
-            {describeReadingDates(entry.data)}
-          </ThemedText>
-        ) : null}
+        {entry.data ? <ReadingDatesCard entry={entry.data} /> : null}
         {ranked && ranked.category ? (
           <View style={styles.rankedBox}>
             <View style={styles.flex}>

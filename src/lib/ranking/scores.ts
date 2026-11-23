@@ -33,8 +33,12 @@ export const PROVISIONAL_THRESHOLD = 5;
 
 /**
  * Score for the book at `position` (0 = best) in a list of `listLength` books.
- * The best book gets the top of the band and the worst gets the bottom. A
- * single book gets the top of the band.
+ *
+ * Each book sits in the middle of its equal share of the bucket's band
+ * (the "midpoint rule"). A single liked book scores 8.4, not 10.0, and scores
+ * spread toward the band's edges as the list grows (the #1 of 20 scores 9.9).
+ * This keeps small genres from swinging wildly and stops every genre's #1
+ * from tying at a perfect 10.
  */
 export function scoreForPosition(bucket: Bucket, position: number, listLength: number): number {
   if (!Number.isInteger(listLength) || listLength < 1) {
@@ -43,15 +47,14 @@ export function scoreForPosition(bucket: Bucket, position: number, listLength: n
   if (!Number.isInteger(position) || position < 0 || position >= listLength) {
     throw new RangeError(`position ${position} is out of range for a list of ${listLength}`);
   }
-  // Exact integer arithmetic in tenths, so .x5 values round the same way as
-  // Postgres's round() in bucket_score(). Floating point would turn 9.45 into
-  // 9.4499… and round it down.
+  // score = high - ((position + 0.5) / n) * (high - low), computed exactly in
+  // tenths so exact halves round up the same way Postgres's round() does in
+  // bucket_score(). Floating point would turn e.g. 8.35 into 8.3499...
   const { low, high } = BUCKET_BANDS[bucket];
   const high10 = Math.round(high * 10);
   const width10 = high10 - Math.round(low * 10);
-  if (listLength === 1) return high10 / 10;
-  const den = listLength - 1;
-  const num = high10 * den - position * width10; // score × 10 = num / den
+  const den = 2 * listLength;
+  const num = high10 * den - (2 * position + 1) * width10; // score × 10 = num / den
   return Math.floor((2 * num + den) / (2 * den)) / 10; // round half up
 }
 

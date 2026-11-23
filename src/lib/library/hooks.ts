@@ -97,6 +97,16 @@ export function useRankBook() {
   });
 }
 
+export function useSetDates() {
+  const backend = useBackend();
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ bookId, ...dates }: { bookId: string; startedAt: string | null; finishedAt: string | null }) =>
+      backend.setDates(bookId, dates),
+    onSuccess: () => client.invalidateQueries({ queryKey: queryKeys.library }),
+  });
+}
+
 export function useSetChips() {
   const backend = useBackend();
   const client = useQueryClient();

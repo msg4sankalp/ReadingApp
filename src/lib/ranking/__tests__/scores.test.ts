@@ -8,16 +8,23 @@ import {
 } from '../scores';
 
 describe('scoreForPosition', () => {
-  it('gives a single book the top of its band', () => {
-    expect(scoreForPosition('liked', 0, 1)).toBe(10);
-    expect(scoreForPosition('fine', 0, 1)).toBe(6.6);
-    expect(scoreForPosition('disliked', 0, 1)).toBe(3.3);
+  it('puts a single book in the middle of its band', () => {
+    expect(scoreForPosition('liked', 0, 1)).toBe(8.4); // (10 + 6.7) / 2 = 8.35, rounded half up
+    expect(scoreForPosition('fine', 0, 1)).toBe(5);
+    expect(scoreForPosition('disliked', 0, 1)).toBe(1.7); // 1.65, rounded half up
   });
 
-  it('spans the whole band from best to worst', () => {
-    expect(scoresForList('liked', 2)).toEqual([10, 6.7]);
-    expect(scoresForList('liked', 4)).toEqual([10, 8.9, 7.8, 6.7]);
-    expect(scoresForList('disliked', 3)).toEqual([3.3, 1.7, 0]);
+  it('places each book in the middle of its share of the band', () => {
+    expect(scoresForList('liked', 2)).toEqual([9.2, 7.5]);
+    expect(scoresForList('liked', 4)).toEqual([9.6, 8.8, 7.9, 7.1]);
+    expect(scoresForList('liked', 6)).toEqual([9.7, 9.2, 8.6, 8.1, 7.5, 7]);
+    expect(scoresForList('disliked', 3)).toEqual([2.8, 1.7, 0.6]);
+  });
+
+  it('approaches the band edges as the list grows', () => {
+    expect(scoreForPosition('liked', 0, 20)).toBe(9.9);
+    expect(scoreForPosition('liked', 19, 20)).toBe(6.8);
+    expect(scoreForPosition('liked', 0, 100)).toBe(10);
   });
 
   it('never increases down a list and stays inside the band', () => {
@@ -44,10 +51,9 @@ describe('scoreForPosition', () => {
   });
 
   it('rounds exact halves up, matching Postgres round() in bucket_score()', () => {
-    // 10 - (1/6) * 3.3 = 9.45 exactly; floating point would give 9.4499…
-    expect(scoreForPosition('liked', 1, 7)).toBe(9.5);
-    expect(scoreForPosition('liked', 2, 13)).toBe(9.5);
-    expect(scoreForPosition('liked', 1, 23)).toBe(9.9);
+    // Exactly 8.35 and 2.75; floating point would give 8.3499… and 2.7499…
+    expect(scoreForPosition('liked', 0, 1)).toBe(8.4);
+    expect(scoreForPosition('disliked', 0, 3)).toBe(2.8);
   });
 
   it('rejects invalid input', () => {

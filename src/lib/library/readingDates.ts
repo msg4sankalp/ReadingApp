@@ -78,3 +78,17 @@ export function describeReadingDates(dates: ReadingDates, now: Date = new Date()
   if (days !== null) parts.push(days === 0 ? 'same day' : days === 1 ? '1 day' : `${days} days`);
   return parts.length ? parts.join(' · ') : null;
 }
+
+/**
+ * Check user-edited dates. Returns a message to show, or null when valid.
+ * Dates are "YYYY-MM-DD" strings, so they compare correctly as text.
+ */
+export function validateReadingDates(dates: ReadingDates, today: string): string | null {
+  if ((dates.startedAt && dates.startedAt > today) || (dates.finishedAt && dates.finishedAt > today)) {
+    return 'Dates can’t be in the future.';
+  }
+  if (dates.startedAt && dates.finishedAt && dates.finishedAt < dates.startedAt) {
+    return 'The finish date can’t be before the start date.';
+  }
+  return null;
+}

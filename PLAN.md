@@ -126,11 +126,17 @@ Each bucket owns a score band:
 | Fine | 3.4 – 6.6 |
 | Disliked | 0.0 – 3.3 |
 
-Within a (category, bucket) list of `n` books, the book at position `i` (0 = best) gets:
+Within a (category, bucket) list of `n` books, the book at position `i` (0 = best)
+sits in the middle of its equal share of the band (the "midpoint rule"):
 
 ```
-score = high - (i / max(n - 1, 1)) * (high - low)      # single book → top of band
+score = high - ((i + 0.5) / n) * (high - low)      # single liked book → 8.4
 ```
+
+This was changed from an edge-to-edge formula (best = 10.0, worst = 6.7) after
+testing showed small genres swinging wildly and every genre's #1 tying at 10.0.
+With the midpoint rule, scores approach the band's edges as a list grows (the
+#1 of 20 liked books scores 9.9).
 
 Round to one decimal place for display. Because scores are derived, the formula
 can change at any time and everything can be recalculated from stored positions
@@ -140,7 +146,6 @@ and comparisons.
 Most readers will have a few large categories and several with 1–3 books.
 - **Provisional scores:** with fewer than 5 ranked books in a category, show the score as provisional (for example "~8.5"). It isn't reliable yet.
 - **Ranking a thin category:** keep the binary search inside the category anyway. A wrong cross-genre comparison does more harm than a provisional score.
-- **Later idea:** if the band formula feels harsh for tiny lists (the first book always gets 10.0), compress small lists toward the middle of the band.
 
 ### Views
 - **By genre (the main view):** "My Sci-Fi & Fantasy", "My Memoirs", ...
@@ -218,6 +223,8 @@ never sends inconsistent positions.
 - [x] Demo mode with a sample library, for testing the concept without accounts
 - [x] Start and finish dates (Start Reading / Mark Finished log today's local date)
 - [x] Design pass, part 1: "Warm paper" palette (light + dark), Instrument Serif headings with Inter, shared components (pill buttons, chips, cards), new Home screen, all screens restyled
+- [x] Steadier scores (midpoint rule) in app, demo and database (migration recomputes existing scores)
+- [x] Editable start and finish dates (system date picker on phones, browser date input on web), with validation
 - [x] Library tab replaces Rankings: Reading / Want to Read / Read switcher; Read is your rankings with genre chips, Liked/Fine/Didn't like groups, and an All view by score
 - [x] Name (Flip) and app icon: terracotta "Flip" wordmark in Instrument Serif Italic with a cream page corner turning over; matching splash (light and dark) and favicon
 - [ ] Design pass, part 2: ranking-moment polish (animation, haptics, score reveal), empty/loading states, checked on real iOS and Android

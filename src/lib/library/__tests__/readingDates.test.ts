@@ -4,6 +4,7 @@ import {
   describeReadingDates,
   formatReadingDate,
   localDateString,
+  validateReadingDates,
 } from '../readingDates';
 
 const TODAY = '2026-11-23';
@@ -71,5 +72,22 @@ describe('local dates', () => {
     );
     expect(describeReadingDates({ startedAt: '2026-11-23', finishedAt: '2026-11-23' }, now)).toMatch(/same day$/);
     expect(describeReadingDates({ startedAt: null, finishedAt: null }, now)).toBeNull();
+  });
+});
+
+describe('validateReadingDates', () => {
+  it('accepts valid dates, including unknown ones', () => {
+    expect(validateReadingDates({ startedAt: '2026-11-01', finishedAt: '2026-11-23' }, TODAY)).toBeNull();
+    expect(validateReadingDates({ startedAt: TODAY, finishedAt: TODAY }, TODAY)).toBeNull();
+    expect(validateReadingDates({ startedAt: null, finishedAt: '2026-11-23' }, TODAY)).toBeNull();
+  });
+
+  it('rejects a finish before the start', () => {
+    expect(validateReadingDates({ startedAt: '2026-11-10', finishedAt: '2026-11-09' }, TODAY)).toMatch(/before the start/);
+  });
+
+  it('rejects future dates', () => {
+    expect(validateReadingDates({ startedAt: '2026-11-24', finishedAt: null }, TODAY)).toMatch(/future/);
+    expect(validateReadingDates({ startedAt: null, finishedAt: '2027-01-01' }, TODAY)).toMatch(/future/);
   });
 });
