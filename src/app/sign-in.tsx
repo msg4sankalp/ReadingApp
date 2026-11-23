@@ -48,7 +48,7 @@ export default function SignInScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.container}>
         <View style={styles.header}>
-          <ThemedText type="subtitle">ReadingApp</ThemedText>
+          <ThemedText type="title">ReadingApp</ThemedText>
           <ThemedText themeColor="textSecondary">
             Rank the books you read, genre by genre.
           </ThemedText>
@@ -85,6 +85,7 @@ export default function SignInScreen() {
           {error ? <ErrorText error={error} /> : null}
           {notice ? <ThemedText type="small">{notice}</ThemedText> : null}
           <Button
+            size="large"
             label={mode === 'sign-in' ? 'Sign in' : 'Create account'}
             onPress={submit}
             disabled={!canSubmit}

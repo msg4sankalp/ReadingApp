@@ -29,6 +29,8 @@ export interface Chip {
 export interface Category {
   slug: CategorySlug;
   name: string;
+  /** For tight spaces, e.g. genre bubbles. */
+  shortName: string;
   group: 'fiction' | 'nonfiction' | 'other';
   /** "What made it work?" options shown after ranking a book in this category. */
   chips: Chip[];
@@ -42,31 +44,31 @@ const chip = (label: string): Chip => ({
 const chips = (...labels: string[]) => labels.map(chip);
 
 export const CATEGORIES: readonly Category[] = [
-  { slug: 'literary-fiction', name: 'Literary & General Fiction', group: 'fiction',
+  { slug: 'literary-fiction', name: 'Literary & General Fiction', shortName: 'Literary', group: 'fiction',
     chips: chips('Prose', 'Characters', 'Themes', 'Emotional impact', 'Structure') },
-  { slug: 'sff', name: 'Science Fiction & Fantasy', group: 'fiction',
+  { slug: 'sff', name: 'Science Fiction & Fantasy', shortName: 'Sci-Fi & Fantasy', group: 'fiction',
     chips: chips('Ideas', 'World-building', 'Characters', 'Plot', 'Prose') },
-  { slug: 'mystery-thriller', name: 'Mystery & Thriller', group: 'fiction',
+  { slug: 'mystery-thriller', name: 'Mystery & Thriller', shortName: 'Mystery', group: 'fiction',
     chips: chips('Twists', 'Pacing', 'Atmosphere', 'Detective', 'Ending') },
-  { slug: 'romance', name: 'Romance', group: 'fiction',
+  { slug: 'romance', name: 'Romance', shortName: 'Romance', group: 'fiction',
     chips: chips('Chemistry', 'Tropes', 'Banter', 'Spice level', 'Emotional payoff') },
-  { slug: 'horror', name: 'Horror', group: 'fiction',
+  { slug: 'horror', name: 'Horror', shortName: 'Horror', group: 'fiction',
     chips: chips('Dread', 'Scares', 'Atmosphere', 'Characters', 'Ending') },
-  { slug: 'historical-fiction', name: 'Historical Fiction', group: 'fiction',
+  { slug: 'historical-fiction', name: 'Historical Fiction', shortName: 'Historical', group: 'fiction',
     chips: chips('Setting', 'Characters', 'Research', 'Plot', 'Emotional impact') },
-  { slug: 'memoir-biography', name: 'Memoir & Biography', group: 'nonfiction',
+  { slug: 'memoir-biography', name: 'Memoir & Biography', shortName: 'Memoir', group: 'nonfiction',
     chips: chips('Voice', 'Life story', 'Insight', 'Honesty', 'Humor') },
-  { slug: 'history', name: 'History', group: 'nonfiction',
+  { slug: 'history', name: 'History', shortName: 'History', group: 'nonfiction',
     chips: chips('Narrative', 'Research depth', 'New perspective', 'Readability') },
-  { slug: 'science-nature', name: 'Science, Tech & Nature', group: 'nonfiction',
+  { slug: 'science-nature', name: 'Science, Tech & Nature', shortName: 'Science', group: 'nonfiction',
     chips: chips('Big ideas', 'Clarity', 'Wonder', 'Practical takeaways', 'Storytelling') },
-  { slug: 'society-ideas', name: 'Society, Politics & Ideas', group: 'nonfiction',
+  { slug: 'society-ideas', name: 'Society, Politics & Ideas', shortName: 'Ideas & Society', group: 'nonfiction',
     chips: chips('Argument', 'Changed my mind', 'Research', 'Timeliness', 'Readability') },
-  { slug: 'business-self-improvement', name: 'Business & Self-Improvement', group: 'nonfiction',
+  { slug: 'business-self-improvement', name: 'Business & Self-Improvement', shortName: 'Self-Improvement', group: 'nonfiction',
     chips: chips('Actionable', 'Frameworks', 'Examples', 'Motivating', 'Concise') },
-  { slug: 'poetry', name: 'Poetry', group: 'other',
+  { slug: 'poetry', name: 'Poetry', shortName: 'Poetry', group: 'other',
     chips: chips('Language', 'Imagery', 'Emotion', 'Form', 'Memorable lines') },
-  { slug: 'graphic-novels', name: 'Graphic Novels & Comics', group: 'other',
+  { slug: 'graphic-novels', name: 'Graphic Novels & Comics', shortName: 'Graphic Novels', group: 'other',
     chips: chips('Art', 'Story', 'Characters', 'Panel craft', 'World-building') },
 ];
 

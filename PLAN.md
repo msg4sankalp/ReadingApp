@@ -15,6 +15,15 @@ recommendations.
 | Ranking | Comparison-based (binary insertion) | Score is derived, never entered |
 | Ambition | Side project / learning, launch-ready path | Don't over-build, but avoid choices that block a launch |
 
+## Design
+
+Inspired by Fable, an Iwu book-app concept and the Mayor onboarding concept; not a copy of any.
+- **Palette: "Warm paper."** Cream background, near-white cards, charcoal main buttons, terracotta accent, a warm yellow for feature cards. Book covers supply most of the color. A matching dark palette follows the system setting.
+- **Type:** Instrument Serif for headings, questions and scores; Inter for everything else.
+- **Shape:** pill buttons and chips, 20px-radius cards, no heavy shadows.
+- **Home** replaces the Library tab: greeting, Continue reading, books to rank, genre bubbles (your #1 book's cover), Picked for you, Want to read. Full shelves are one tap away.
+- Tokens live in `src/constants/theme.ts`; shared components in `src/components/ui.tsx`.
+
 ## Tech stack
 
 | Layer | Choice | Why |
@@ -207,7 +216,8 @@ never sends inconsistent positions.
 - [x] Profile screen with basic stats
 - [x] Demo mode with a sample library, for testing the concept without accounts
 - [x] Start and finish dates (Start Reading / Mark Finished log today's local date)
-- [ ] **Design pass** before testers: name and identity, app icon, colors and type, shared components, ranking-moment polish (animation, haptics, score reveal), empty/loading states, dark mode, checked on real iOS and Android
+- [x] Design pass, part 1: "Warm paper" palette (light + dark), Instrument Serif headings with Inter, shared components (pill buttons, chips, cards), new Home screen, all screens restyled
+- [ ] Design pass, part 2: name and identity, app icon and splash, ranking-moment polish (animation, haptics, score reveal), empty/loading states, checked on real iOS and Android
 - [ ] Ship to about 10–20 readers through TestFlight or Expo internal distribution
 
 ### Phase 2: Social

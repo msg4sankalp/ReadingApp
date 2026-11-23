@@ -89,7 +89,7 @@ export default function RankingsScreen() {
         contentContainerStyle={{ paddingBottom: BottomTabInset + Spacing.three, flexGrow: 1 }}
         ListHeaderComponent={
           <View style={styles.header}>
-            <ThemedText type="subtitle">Rankings</ThemedText>
+            <ThemedText type="title">Rankings</ThemedText>
             <View style={styles.toggle}>
               <Button
                 variant="secondary"
@@ -122,8 +122,8 @@ export default function RankingsScreen() {
         }
         renderSectionHeader={({ section }) => (
           <View style={styles.sectionHeader}>
-            <ThemedText type="smallBold" themeColor="textSecondary">
-              {section.title.toUpperCase()}
+            <ThemedText type="label" themeColor="textSecondary">
+              {section.title}
             </ThemedText>
             {section.note ? (
               <ThemedText type="small" themeColor="textSecondary">
@@ -159,7 +159,7 @@ function RankedRow({
   const { book } = entry;
   return (
     <View style={styles.rankedRow}>
-      <ThemedText type="smallBold" themeColor="textSecondary" style={styles.rank}>
+      <ThemedText type="heading" themeColor="textSecondary" style={styles.rank}>
         {rank}
       </ThemedText>
       <View style={styles.flex}>
@@ -168,7 +168,11 @@ function RankedRow({
           authors={book.authors}
           coverUrl={book.coverUrl}
           detail={showGenre && entry.category ? getCategory(entry.category).name : null}
-          trailing={<ThemedText style={styles.score}>{formatScore(entry.score!, provisional)}</ThemedText>}
+          trailing={
+            <ThemedText type="heading" style={styles.score}>
+              {formatScore(entry.score!, provisional)}
+            </ThemedText>
+          }
           onPress={() =>
             book.openLibraryKey &&
             router.push({ pathname: '/book/[workId]', params: { workId: workIdFromKey(book.openLibraryKey) } })
@@ -184,7 +188,7 @@ const styles = StyleSheet.create({
   toggle: { flexDirection: 'row', gap: Spacing.two },
   sectionHeader: { paddingTop: Spacing.four, paddingBottom: Spacing.one, gap: Spacing.half },
   rankedRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
-  rank: { width: 24, textAlign: 'right' },
-  score: { fontSize: 18, fontWeight: 700 },
+  rank: { width: 28, textAlign: 'right', fontSize: 22 },
+  score: { fontSize: 28, lineHeight: 32 },
   flex: { flex: 1 },
 });

@@ -7,3 +7,16 @@
   --font-rounded: 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif;
   --font-serif: Georgia, 'Times New Roman', serif;
 }
+
+/* Web only: a thin accent focus ring for text fields (matches Colors.accent). */
+input:focus-visible,
+textarea:focus-visible {
+  outline: 1.5px solid #b85a38;
+  outline-offset: 0;
+}
+@media (prefers-color-scheme: dark) {
+  input:focus-visible,
+  textarea:focus-visible {
+    outline-color: #e08a66;
+  }
+}

@@ -74,7 +74,7 @@ export default function BookScreen() {
         <View style={styles.hero}>
           <BookCover uri={b.coverUrl?.replace('-M.jpg', '-L.jpg') ?? null} width={140} />
           <View style={styles.heroText}>
-            <ThemedText type="default" style={styles.title}>
+            <ThemedText type="heading" style={styles.title}>
               {b.title}
             </ThemedText>
             {b.subtitle ? <ThemedText themeColor="textSecondary">{b.subtitle}</ThemedText> : null}
@@ -122,7 +122,7 @@ export default function BookScreen() {
         {ranked && ranked.category ? (
           <View style={styles.rankedBox}>
             <View style={styles.flex}>
-              <ThemedText style={styles.score}>{formatScore(ranked.score!, isProvisional(rankedInGenre))}</ThemedText>
+              <ThemedText type="display" style={styles.score}>{formatScore(ranked.score!, isProvisional(rankedInGenre))}</ThemedText>
               <ThemedText type="small" themeColor="textSecondary">
                 #{ranked.rankPosition! + 1} in {getCategory(ranked.category).name} ·{' '}
                 {{ liked: 'Liked', fine: 'Fine', disliked: "Didn't like" }[ranked.bucket!]}
@@ -161,12 +161,12 @@ const styles = StyleSheet.create({
   content: { gap: Spacing.four, paddingVertical: Spacing.four },
   hero: { flexDirection: 'row', gap: Spacing.three },
   heroText: { flex: 1, gap: Spacing.one },
-  title: { fontSize: 22, lineHeight: 28, fontWeight: 700 },
+  title: { fontSize: 30, lineHeight: 34 },
   shelves: { flexDirection: 'row', gap: Spacing.two },
-  shelfButton: { flex: 1, paddingHorizontal: Spacing.one },
+  shelfButton: { flex: 1, paddingHorizontal: Spacing.one, minHeight: 42 },
   description: { gap: Spacing.one },
   more: { alignSelf: 'flex-start', paddingHorizontal: 0 },
   rankedBox: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
-  score: { fontSize: 32, lineHeight: 38, fontWeight: 800 },
+  score: { fontSize: 56, lineHeight: 60 },
   flex: { flex: 1 },
 });

@@ -8,7 +8,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { BookCover, Button, Centered, ErrorText, Screen } from '@/components/ui';
+import { BookCover, Button, Centered, Chip, ErrorText, Screen } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import type { BookSearchResult } from '@/lib/books/openLibrary';
@@ -173,10 +173,10 @@ function RankFlow({
 
         {step.kind === 'bucket' && category && (
           <View style={styles.section}>
-            <ThemedText type="smallBold" themeColor="textSecondary">
-              {getCategory(category).name.toUpperCase()}
+            <ThemedText type="label" themeColor="textSecondary">
+              {getCategory(category).name}
             </ThemedText>
-            <ThemedText style={styles.question}>How did you feel about it?</ThemedText>
+            <ThemedText type="title">How did you feel about it?</ThemedText>
             {BUCKET_OPTIONS.map((o) => (
               <Button
                 key={o.bucket}
@@ -234,7 +234,7 @@ function CategoryStep({
 }) {
   return (
     <View style={styles.section}>
-      <ThemedText style={styles.question}>Which genre should it compete in?</ThemedText>
+      <ThemedText type="title">Which genre should it compete in?</ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
         You&apos;ll only compare it with other books in this genre.
       </ThemedText>
@@ -243,7 +243,7 @@ function CategoryStep({
           <Chip key={c.slug} label={c.name} selected={value === c.slug} onPress={() => onChange(c.slug)} />
         ))}
       </View>
-      <Button label="Continue" onPress={onContinue} disabled={!value} />
+      <Button size="large" label="Continue" onPress={onContinue} disabled={!value} />
     </View>
   );
 }
@@ -263,13 +263,18 @@ function CompareStep({
   onAnswer: (a: Answer) => void;
   onUndo: (() => void) | null;
 }) {
+  const theme = useTheme();
+  const total = maxQuestions(session.list.length);
   const opponent = opponents.get(nextOpponent(session)!)!;
   return (
     <View style={styles.section}>
+      <View style={[styles.progress, { backgroundColor: theme.border }]}>
+        <View style={[styles.progressFill, { backgroundColor: theme.cta, width: `${((asked + 1) / total) * 100}%` }]} />
+      </View>
       <ThemedText type="small" themeColor="textSecondary">
-        Question {asked + 1} of at most {maxQuestions(session.list.length)}
+        Question {asked + 1} of at most {total}
       </ThemedText>
-      <ThemedText style={styles.question}>Which did you like more?</ThemedText>
+      <ThemedText type="title">Which did you like more?</ThemedText>
       <View style={styles.versus}>
         <ChoiceCard title={book.title} authors={book.authors} coverUrl={book.coverUrl} onPress={() => onAnswer('new')} />
         <ThemedText type="smallBold" themeColor="textSecondary" style={styles.or}>
@@ -312,7 +317,7 @@ function ChoiceCard({
         styles.card,
         { backgroundColor: theme.backgroundElement, borderColor: pressed ? theme.accent : theme.border },
       ]}>
-      <BookCover uri={coverUrl} width={96} />
+      <BookCover uri={coverUrl} width={112} />
       <ThemedText type="smallBold" numberOfLines={3} style={styles.center}>
         {title}
       </ThemedText>
@@ -359,7 +364,7 @@ function DoneStep({
   return (
     <View style={[styles.section, styles.centerItems]}>
       <BookCover uri={book.coverUrl} width={110} />
-      <ThemedText style={styles.score}>{formatScore(score, provisional)}</ThemedText>
+      <ThemedText type="display" style={styles.center}>{formatScore(score, provisional)}</ThemedText>
       <ThemedText style={styles.center}>
         #{position + 1} of {listLength} in {cat.name} · {bucketName}
       </ThemedText>
@@ -370,7 +375,7 @@ function DoneStep({
       ) : null}
 
       <View style={[styles.section, styles.fullWidth]}>
-        <ThemedText style={styles.question}>
+        <ThemedText type="heading">
           {bucket === 'disliked' ? 'What fell short?' : 'What made it work?'}
         </ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
@@ -389,30 +394,9 @@ function DoneStep({
           ))}
         </View>
         {setChips.isError ? <ErrorText error={setChips.error} /> : null}
-        <Button label="Done" onPress={finish} loading={setChips.isPending} />
+        <Button size="large" label="Done" onPress={finish} loading={setChips.isPending} />
       </View>
     </View>
-  );
-}
-
-function Chip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
-  const theme = useTheme();
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityState={{ selected }}
-      onPress={onPress}
-      style={[
-        styles.chip,
-        {
-          backgroundColor: selected ? theme.accent : theme.backgroundElement,
-          borderColor: selected ? theme.accent : theme.border,
-        },
-      ]}>
-      <ThemedText type="small" style={{ color: selected ? theme.onAccent : theme.text }}>
-        {label}
-      </ThemedText>
-    </Pressable>
   );
 }
 
@@ -420,7 +404,8 @@ const styles = StyleSheet.create({
   content: { gap: Spacing.four, paddingVertical: Spacing.four, flexGrow: 1 },
   bookHeader: { flexDirection: 'row', gap: Spacing.three, alignItems: 'center' },
   section: { gap: Spacing.three },
-  question: { fontSize: 22, lineHeight: 28, fontWeight: 700 },
+  progress: { height: 5, borderRadius: 3, overflow: 'hidden' },
+  progressFill: { height: '100%', borderRadius: 3 },
   bigButton: { minHeight: 56, alignItems: 'flex-start' },
   chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   chip: {
@@ -444,5 +429,4 @@ const styles = StyleSheet.create({
   center: { textAlign: 'center' },
   centerItems: { alignItems: 'center' },
   fullWidth: { alignSelf: 'stretch', marginTop: Spacing.three },
-  score: { fontSize: 56, lineHeight: 64, fontWeight: 800 },
 });

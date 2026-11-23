@@ -4,7 +4,7 @@ import { Alert, Platform, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Button, ErrorText, Screen } from '@/components/ui';
+import { Button, Card, ErrorText, Screen } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { isDemoMode } from '@/lib/appMode';
 import { useSession } from '@/lib/auth/session';
@@ -42,7 +42,7 @@ export default function ProfileScreen() {
   return (
     <Screen>
       <View style={styles.container}>
-        <ThemedText type="subtitle">Profile</ThemedText>
+        <ThemedText type="title">Profile</ThemedText>
         {email ? <ThemedText themeColor="textSecondary">{email}</ThemedText> : null}
 
         <View style={styles.stats}>
@@ -88,18 +88,18 @@ export default function ProfileScreen() {
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <View style={styles.stat}>
-      <ThemedText type="subtitle">{value}</ThemedText>
+    <Card style={styles.stat}>
+      <ThemedText type="heading">{value}</ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
         {label}
       </ThemedText>
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
   container: { gap: Spacing.three, paddingTop: Spacing.three },
-  stats: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.four, paddingVertical: Spacing.three },
-  stat: { minWidth: 64 },
-  card: { gap: Spacing.two, padding: Spacing.three, borderRadius: 12 },
+  stats: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two, paddingVertical: Spacing.three },
+  stat: { minWidth: '30%', flexGrow: 1, borderRadius: 16 },
+  card: { gap: Spacing.two, padding: Spacing.three, borderRadius: 20 },
 });

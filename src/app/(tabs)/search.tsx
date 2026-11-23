@@ -18,7 +18,7 @@ export default function SearchScreen() {
   return (
     <Screen>
       <View style={styles.header}>
-        <ThemedText type="subtitle">Search</ThemedText>
+        <ThemedText type="title">Search</ThemedText>
         <TextField
           placeholder="Title, author or ISBN"
           value={query}
