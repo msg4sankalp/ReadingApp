@@ -245,8 +245,14 @@ See **"Recommendation engine"** below for the design. Milestones:
 - [ ] R4. AI tagging, taste summaries and description embeddings (needs Supabase for a server function)
 - [ ] R5. Collaborative filtering: "readers like you loved…" (needs real users)
 
-### Phase 4: Community (Fable-style)
-- Book clubs, reading schedules, chapter-gated discussion threads.
+### Phase 4: Book clubs (Fable-style)
+- [x] Demo-mode book clubs: Clubs tab, start a club (name, first book, weekly page-range schedule, invite code), join with a code, club home, spoiler-safe discussion by checkpoint, threads with likes, live catch-ups (video link or place) with RSVP and add-to-calendar
+- [ ] Supabase version: tables `clubs`, `club_members` (role), `club_progress` (reached checkpoint), `club_checkpoints`, `club_posts` (parent_id for replies), `post_likes`, `club_meetings`, `meeting_rsvps`; RLS so only members can read a club; invite codes resolved by a server function
+- [ ] Display names and avatars on profiles (needed for clubs with real people)
+- [ ] Push notifications: new posts in unlocked checkpoints, catch-up reminders (1 day and 1 hour before)
+- [ ] Next book for a club (vote on candidates, using recommendations), past books
+- [ ] Moderation: report a post, owner removes members
+- [ ] Later: public clubs you can discover; in-app video (decided against for now: link out to Zoom/Meet/FaceTime)
 
 ## Recommendation engine
 

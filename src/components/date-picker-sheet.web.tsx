@@ -13,12 +13,12 @@ import { useTheme } from '@/hooks/use-theme';
 
 import type { DatePickerSheetProps } from './date-picker-sheet';
 
-export function DatePickerSheet({ visible, title, value, maxDate, onCancel, onSave }: DatePickerSheetProps) {
+export function DatePickerSheet({ visible, ...rest }: DatePickerSheetProps) {
   if (!visible) return null;
-  return <Sheet title={title} value={value} maxDate={maxDate} onCancel={onCancel} onSave={onSave} />;
+  return <Sheet {...rest} />;
 }
 
-function Sheet({ title, value, maxDate, onCancel, onSave }: Omit<DatePickerSheetProps, 'visible'>) {
+function Sheet({ title, value, mode = 'date', maxDate, minDate, onCancel, onSave }: Omit<DatePickerSheetProps, 'visible'>) {
   const theme = useTheme();
   const dark = useColorScheme() === 'dark';
   const [date, setDate] = useState(value);
@@ -40,10 +40,11 @@ function Sheet({ title, value, maxDate, onCancel, onSave }: Omit<DatePickerSheet
           </Pressable>
         </View>
         <input
-          type="date"
+          type={mode}
           aria-label={title}
           value={date}
-          max={maxDate}
+          max={mode === 'date' ? maxDate : undefined}
+          min={mode === 'date' ? minDate : undefined}
           onChange={(e) => setDate(e.target.value)}
           style={{
             fontFamily: FontFamily.sans[500],

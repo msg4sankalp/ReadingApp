@@ -18,6 +18,10 @@ export default function TabsLayout() {
         <NativeTabs.Trigger.Label>Library</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf={{ default: 'books.vertical', selected: 'books.vertical.fill' }} md="library_books" />
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="clubs">
+        <NativeTabs.Trigger.Label>Clubs</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf={{ default: 'person.3', selected: 'person.3.fill' }} md="groups" />
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="search">
         <NativeTabs.Trigger.Label>Search</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="magnifyingglass" md="search" />

@@ -10,6 +10,28 @@ import { candidateQueries, filterCandidates, pickRecommendations, type Recommend
 import { predict, type PredictableBook } from './predict';
 import { buildTaste } from './taste';
 
+/** Like Promise.allSettled, but runs at most `limit` tasks at once. */
+export async function settleWithLimit<T, R>(
+  items: readonly T[],
+  limit: number,
+  run: (item: T) => Promise<R>,
+): Promise<PromiseSettledResult<R>[]> {
+  const results: PromiseSettledResult<R>[] = new Array(items.length);
+  let next = 0;
+  const worker = async () => {
+    while (next < items.length) {
+      const i = next++;
+      try {
+        results[i] = { status: 'fulfilled', value: await run(items[i]) };
+      } catch (reason) {
+        results[i] = { status: 'rejected', reason };
+      }
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+  return results;
+}
+
 /** The reader's taste profile, rebuilt whenever the library changes. */
 export function useTaste() {
   const library = useLibrary();
@@ -35,12 +57,12 @@ export function useRecommendations({ count = 20 }: { count?: number } = {}) {
     enabled: queries.length > 0,
     staleTime: 6 * 60 * 60_000,
     queryFn: async ({ signal }) => {
-      const results = await Promise.allSettled(
-        queries.map((q) =>
-          openLibrary
-            .discover({ subject: q.subject, author: q.author }, { limit: q.limit, signal })
-            .then((books) => books.map((b) => ({ ...b, queryGenre: q.genre }))),
-        ),
+      // At most 3 searches at a time: Open Library asks apps to be gentle, and
+      // a burst of a dozen requests gets some of them refused.
+      const results = await settleWithLimit(queries, 3, (q) =>
+        openLibrary
+          .discover({ subject: q.subject, author: q.author }, { limit: q.limit, signal })
+          .then((books) => books.map((b) => ({ ...b, queryGenre: q.genre }))),
       );
       const ok = results.flatMap((r) => (r.status === 'fulfilled' ? r.value : []));
       if (ok.length === 0 && results.some((r) => r.status === 'rejected')) {

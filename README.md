@@ -21,6 +21,8 @@ src/app/                  Screens (Expo Router: every file is a route)
   (tabs)/search.tsx       Search (Open Library)
   (tabs)/profile.tsx      Profile and stats; demo reset
   for-you.tsx             Picked for you: all recommendations with reasons and actions
+  (tabs)/clubs.tsx        Book clubs you're in; start or join a club
+  clubs/                  Start a club, club home, discussion, threads, schedule a catch-up
   book/[workId].tsx       Book page: details, shelf buttons, dates, score or prediction
   rank/[workId].tsx       Ranking flow: genre → feeling → head-to-head → score + reasons
 src/components/           Shared UI (buttons, text fields, book rows and covers)
@@ -32,6 +34,7 @@ src/lib/supabase/         Supabase client
 src/lib/auth/             Sign-in session context
 src/lib/library/          Library data: backend interface, Supabase backend, data hooks
 src/lib/demo/             Demo mode: on-device backend and sample library
+src/lib/clubs/            Book clubs: rules (schedules, spoiler locks), demo clubs with simulated members
 src/lib/recommend/        Recommendations: features, taste profile, prediction, candidates, accuracy test
 supabase/migrations/      Database schema, Row Level Security and ranking functions
 supabase/seed.sql         Categories and chips (must match src/lib/catalog/categories.ts)
@@ -63,7 +66,7 @@ With no Supabase project configured (or with `EXPO_PUBLIC_DEMO_MODE=1` in `.env`
 the app runs in **demo mode**: no sign-in, data stays on the device, and it
 starts with a sample library of about 30 real books already ranked across
 several genres (`src/lib/demo/seedData.ts`). Search still uses Open Library, so
-you can add any book. Profile → **Reset demo data** restores the sample library.
+you can add any book. It also includes two book clubs with simulated members; join a third with the code **FLIP-123**. Profile → **Reset demo data** restores the sample library and clubs.
 
 ## Setting up the database (Supabase)
 

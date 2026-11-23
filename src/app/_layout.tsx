@@ -93,6 +93,11 @@ function RootNavigator() {
       <Stack.Protected guard={signedIn}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="for-you" options={{ title: 'Picked for you' }} />
+        <Stack.Screen name="clubs/new" options={{ title: 'Start a club' }} />
+        <Stack.Screen name="clubs/[id]/index" options={{ title: '' }} />
+        <Stack.Screen name="clubs/[id]/discussion" options={{ title: 'Discussion' }} />
+        <Stack.Screen name="clubs/[id]/post/[postId]" options={{ title: '' }} />
+        <Stack.Screen name="clubs/[id]/schedule" options={{ title: 'Schedule a catch-up', presentation: 'modal' }} />
         <Stack.Screen name="book/[workId]" options={{ title: '' }} />
         <Stack.Screen name="rank/[workId]" options={{ title: '', presentation: 'modal' }} />
       </Stack.Protected>

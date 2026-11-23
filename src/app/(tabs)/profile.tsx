@@ -8,6 +8,7 @@ import { Button, Card, ErrorText, Screen } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { isDemoMode } from '@/lib/appMode';
 import { useSession } from '@/lib/auth/session';
+import { clubKeys, resetDemoClubs } from '@/lib/clubs/hooks';
 import { getDemoBackend } from '@/lib/library/backend';
 import { queryKeys, useLibrary } from '@/lib/library/hooks';
 
@@ -26,9 +27,11 @@ export default function ProfileScreen() {
   function resetDemo() {
     const reset = () => {
       getDemoBackend().reset();
+      resetDemoClubs();
       client.invalidateQueries({ queryKey: queryKeys.library });
+      client.invalidateQueries({ queryKey: clubKeys.all });
     };
-    const message = 'This replaces your demo library with the starting books and rankings.';
+    const message = 'This replaces your demo library and book clubs with the starting ones.';
     if (Platform.OS === 'web') {
       if (window.confirm(message)) reset();
     } else {
