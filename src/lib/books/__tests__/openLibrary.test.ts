@@ -44,6 +44,8 @@ describe('search', () => {
         isbn13: '9780441172719',
         subjects: duneDoc.subject,
         suggestedCategory: 'sff',
+        rating: null,
+        editionCount: 0,
       },
     ]);
   });
@@ -111,6 +113,24 @@ describe('search', () => {
     await expect(createOpenLibraryClient({ fetchImpl: aborted }).search('dune')).rejects.toMatchObject({
       name: 'AbortError',
     });
+  });
+});
+
+describe('discover', () => {
+  it('searches by subject and author, sorted by rating', async () => {
+    const fetchImpl = mockFetch({ docs: [{ ...duneDoc, ratings_average: 4.3, ratings_count: 900 }] });
+    const client = createOpenLibraryClient({ fetchImpl });
+    const [book] = await client.discover({ subject: 'space opera', author: 'Frank "Herbert"' });
+    const url = new URL(String(fetchImpl.mock.calls[0][0]));
+    expect(url.searchParams.get('q')).toBe('subject:"space opera" author:"Frank Herbert" language:eng');
+    expect(url.searchParams.get('sort')).toBe('rating');
+    expect(book.rating).toEqual({ average: 4.3, count: 900 });
+  });
+
+  it('does nothing without a subject or author', async () => {
+    const fetchImpl = mockFetch({ docs: [] });
+    expect(await createOpenLibraryClient({ fetchImpl }).discover({})).toEqual([]);
+    expect(fetchImpl).not.toHaveBeenCalled();
   });
 });
 

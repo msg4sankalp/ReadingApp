@@ -12,7 +12,14 @@
 import type { BookSearchResult } from '@/lib/books/openLibrary';
 import { getCategory, type CategorySlug } from '@/lib/catalog/categories';
 import { datesForShelfChange, localDateString } from '@/lib/library/readingDates';
-import type { LibraryBackend, LibraryEntry, RankInput, RankedBook, ReadingStatus } from '@/lib/library/types';
+import type {
+  LibraryBackend,
+  LibraryEntry,
+  RankInput,
+  RankedBook,
+  ReadingStatus,
+  RecommendationAction,
+} from '@/lib/library/types';
 import { scoreForPosition, type Bucket, type Comparison } from '@/lib/ranking';
 
 import { DEMO_BOOKS, DEMO_RANKINGS, DEMO_SHELVES } from './seedData';
@@ -43,6 +50,8 @@ export interface DemoState {
   books: Record<string, BookSearchResult>;
   entries: Record<string, DemoEntry>;
   comparisons: (Comparison & { category: CategorySlug; createdAt: string })[];
+  /** Missing in demo data saved before recommendations existed. */
+  feedback?: { key: string; action: RecommendationAction; predictedScore: number | null; createdAt: string }[];
 }
 
 export type DemoBackend = LibraryBackend & {
@@ -88,7 +97,7 @@ export function createSeedState(now: Date = new Date()): DemoState {
       };
     }
   }
-  return { version: 1, books, entries, comparisons: [] };
+  return { version: 1, books, entries, comparisons: [], feedback: [] };
 }
 
 function load(storage: KeyValueStorage | null): DemoState {
@@ -153,7 +162,13 @@ export function createDemoBackend(
       startedAt: e.startedAt ?? null,
       finishedAt: e.finishedAt ?? null,
       updatedAt: e.updatedAt,
-      book: { title: b.title, authors: b.authors, coverUrl: b.coverUrl, openLibraryKey: b.openLibraryKey },
+      book: {
+        title: b.title,
+        authors: b.authors,
+        coverUrl: b.coverUrl,
+        openLibraryKey: b.openLibraryKey,
+        subjects: b.subjects,
+      },
     };
   };
 
@@ -281,6 +296,16 @@ export function createDemoBackend(
       const allowed = new Set(getCategory(category).chips.map((c) => c.slug));
       e.chips = [...new Set(chipSlugs)].filter((slug) => allowed.has(slug));
       save();
+    },
+
+    async recordFeedback(book, action, predictedScore) {
+      ensure(book);
+      (state.feedback ??= []).push({ key: book.openLibraryKey, action, predictedScore, createdAt: now().toISOString() });
+      save();
+    },
+
+    async fetchDismissed() {
+      return new Set((state.feedback ?? []).filter((f) => f.action === 'dismissed').map((f) => f.key));
     },
 
     async setDates(bookId, { startedAt, finishedAt }) {

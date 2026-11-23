@@ -24,6 +24,8 @@ const SEARCH_FIELDS = [
   'isbn',
   'number_of_pages_median',
   'edition_count',
+  'ratings_average',
+  'ratings_count',
 ].join(',');
 
 export interface BookSearchResult {
@@ -38,6 +40,9 @@ export interface BookSearchResult {
   isbn13: string | null;
   subjects: string[];
   suggestedCategory: CategorySlug | null;
+  /** Open Library community rating (1–5), when there is one. */
+  rating?: { average: number; count: number } | null;
+  editionCount?: number;
 }
 
 export interface WorkDetails {
@@ -70,6 +75,8 @@ interface RawSearchDoc {
   isbn?: string[];
   number_of_pages_median?: number;
   edition_count?: number;
+  ratings_average?: number;
+  ratings_count?: number;
 }
 
 interface RawWork {
@@ -115,6 +122,27 @@ export function createOpenLibraryClient(options: OpenLibraryClientOptions = {}) 
       return rankSearchDocs(data.docs ?? [])
         .map(normalizeSearchDoc)
         .filter((b): b is BookSearchResult => b !== null);
+    },
+
+    /**
+     * Best-rated works for a subject or author, e.g. { subject: 'hard science fiction' }.
+     * Used to find recommendation candidates.
+     */
+    async discover(
+      { subject, author }: { subject?: string; author?: string },
+      { limit = 20, signal }: { limit?: number; signal?: AbortSignal } = {},
+    ): Promise<BookSearchResult[]> {
+      const quote = (s: string) => `"${s.replace(/"/g, '')}"`;
+      const terms = [subject ? `subject:${quote(subject)}` : null, author ? `author:${quote(author)}` : null].filter(Boolean);
+      if (terms.length === 0) return [];
+      const params = new URLSearchParams({
+        q: `${terms.join(' ')} language:eng`,
+        sort: 'rating',
+        fields: SEARCH_FIELDS,
+        limit: String(limit),
+      });
+      const data = await getJson<{ docs?: RawSearchDoc[] }>(`/search.json?${params}`, signal);
+      return (data.docs ?? []).map(normalizeSearchDoc).filter((b): b is BookSearchResult => b !== null);
     },
 
     async getWork(openLibraryKey: string, { signal }: { signal?: AbortSignal } = {}): Promise<WorkDetails> {
@@ -170,6 +198,8 @@ export function normalizeSearchDoc(doc: RawSearchDoc): BookSearchResult | null {
     isbn13: pickIsbn13(doc.isbn ?? []),
     subjects,
     suggestedCategory: suggestCategory(subjects)?.category ?? null,
+    rating: doc.ratings_count ? { average: doc.ratings_average ?? 0, count: doc.ratings_count } : null,
+    editionCount: doc.edition_count ?? 0,
   };
 }
 

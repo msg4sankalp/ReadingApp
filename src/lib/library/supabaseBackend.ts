@@ -16,7 +16,7 @@ const ENTRY_SELECT = `
   book_id, status, bucket, rank_position, score, started_at, finished_at, updated_at,
   category:categories(slug),
   chips:user_book_chips(chip:category_chips(slug)),
-  book:books!inner(title, authors, cover_url, open_library_key)
+  book:books!inner(title, authors, cover_url, open_library_key, subjects)
 `;
 
 interface EntryRow {
@@ -30,7 +30,7 @@ interface EntryRow {
   updated_at: string;
   category: { slug: string } | null;
   chips: { chip: { slug: string } | null }[] | null;
-  book: { title: string; authors: string[]; cover_url: string | null; open_library_key: string | null };
+  book: { title: string; authors: string[]; cover_url: string | null; open_library_key: string | null; subjects: string[] | null };
 }
 
 function toEntry(row: EntryRow): LibraryEntry {
@@ -51,6 +51,7 @@ function toEntry(row: EntryRow): LibraryEntry {
       authors: row.book.authors,
       coverUrl: row.book.cover_url,
       openLibraryKey: row.book.open_library_key,
+      subjects: row.book.subjects ?? [],
     },
   };
 }
@@ -216,6 +217,25 @@ export function createSupabaseBackend(userId: string): LibraryBackend {
     async unrankBook(bookId) {
       const { error } = await supabase.rpc('unrank_book', { p_book_id: bookId });
       if (error) throw error;
+    },
+
+    async recordFeedback(book, action, predictedScore) {
+      const bookId = await ensureBook(book);
+      const { error } = await supabase
+        .from('recommendation_feedback')
+        .insert({ user_id: userId, book_id: bookId, action, predicted_score: predictedScore });
+      if (error) throw error;
+    },
+
+    async fetchDismissed() {
+      const { data, error } = await supabase
+        .from('recommendation_feedback')
+        .select('book:books!inner(open_library_key)')
+        .eq('user_id', userId)
+        .eq('action', 'dismissed');
+      if (error) throw error;
+      const rows = (data ?? []) as unknown as { book: { open_library_key: string | null } }[];
+      return new Set(rows.flatMap((r) => (r.book.open_library_key ? [r.book.open_library_key] : [])));
     },
 
     async setDates(bookId, { startedAt, finishedAt }) {

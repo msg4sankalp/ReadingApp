@@ -2,6 +2,7 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 
+import { PredictionCard } from '@/components/prediction-card';
 import { ReadingDatesCard } from '@/components/reading-dates-card';
 import { ThemedText } from '@/components/themed-text';
 import { BookCover, Button, Centered, ErrorText, Screen } from '@/components/ui';
@@ -133,7 +134,9 @@ export default function BookScreen() {
           </View>
         ) : currentStatus === 'read' ? (
           <Button label="Rank this book" onPress={openRanking} />
-        ) : null}
+        ) : (
+          <PredictionCard book={b} />
+        )}
 
         {description ? (
           <View style={styles.description}>

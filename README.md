@@ -20,7 +20,8 @@ src/app/                  Screens (Expo Router: every file is a route)
   (tabs)/library.tsx      Library: Reading, Want to Read, and Read (your rankings, by genre)
   (tabs)/search.tsx       Search (Open Library)
   (tabs)/profile.tsx      Profile and stats; demo reset
-  book/[workId].tsx       Book page: details, shelf buttons, dates, score
+  for-you.tsx             Picked for you: all recommendations with reasons and actions
+  book/[workId].tsx       Book page: details, shelf buttons, dates, score or prediction
   rank/[workId].tsx       Ranking flow: genre → feeling → head-to-head → score + reasons
 src/components/           Shared UI (buttons, text fields, book rows and covers)
 src/lib/ranking/          Ranking engine: binary-insertion sessions and score formula
@@ -31,6 +32,7 @@ src/lib/supabase/         Supabase client
 src/lib/auth/             Sign-in session context
 src/lib/library/          Library data: backend interface, Supabase backend, data hooks
 src/lib/demo/             Demo mode: on-device backend and sample library
+src/lib/recommend/        Recommendations: features, taste profile, prediction, candidates, accuracy test
 supabase/migrations/      Database schema, Row Level Security and ranking functions
 supabase/seed.sql         Categories and chips (must match src/lib/catalog/categories.ts)
 ```
@@ -72,7 +74,8 @@ The app needs a Supabase project to sign in.
    1. `supabase/migrations/20261123000000_initial_schema.sql`
    2. `supabase/migrations/20261123000001_explicit_grants.sql`
    3. `supabase/migrations/20261124000000_midpoint_scores.sql`
-   4. `supabase/seed.sql`
+   4. `supabase/migrations/20261124000001_recommendation_feedback.sql`
+   5. `supabase/seed.sql`
 3. For development, turn off **Authentication → Sign In / Providers → Email →
    Confirm email**, so new accounts can sign in straight away.
 4. Copy `.env.example` to `.env` and fill in the project URL and the

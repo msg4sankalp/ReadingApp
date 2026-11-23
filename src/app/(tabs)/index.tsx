@@ -7,6 +7,7 @@ import { router } from 'expo-router';
 import { useMemo } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 
+import { PickedForYou } from '@/components/picked-for-you';
 import { ThemedText } from '@/components/themed-text';
 import { BookCover, Button, Card, Centered, CoverBubble, ErrorText, Screen, SectionHeader } from '@/components/ui';
 import { BottomTabInset, Radius, Spacing } from '@/constants/theme';
@@ -50,20 +51,11 @@ export default function HomeScreen() {
     })
       .filter((g) => g.count > 0)
       .sort((a, b) => b.count - a.count);
-    const favorite = genres[0];
-    const favoriteTop = favorite
-      ? ranked
-          .filter((e) => e.category === favorite.category.slug && e.bucket === 'liked')
-          .sort((a, b) => a.rankPosition! - b.rankPosition!)
-          .slice(0, 3)
-      : [];
     return {
       reading: entries.filter((e) => e.status === 'reading'),
       wantToRead: entries.filter((e) => e.status === 'want_to_read'),
       unranked: entries.filter((e) => e.status === 'read' && e.score === null),
       genres,
-      favorite,
-      favoriteTop,
       rankedCount: ranked.length,
       total: entries.length,
     };
@@ -217,36 +209,7 @@ export default function HomeScreen() {
           </>
         ) : null}
 
-        {/* Picked for you: honest placeholder until recommendations exist. */}
-        <SectionHeader title="Picked for you" />
-        <View style={[styles.highlight, { backgroundColor: theme.highlight }]}>
-          <View style={styles.highlightText}>
-            <ThemedText type="label" style={{ color: theme.onHighlight, opacity: 0.7 }}>
-              Coming soon
-            </ThemedText>
-            <ThemedText type="heading" style={{ color: theme.onHighlight }}>
-              {view.favorite ? `Books for your ${view.favorite.category.shortName.toLowerCase()} taste` : 'Books picked for your taste'}
-            </ThemedText>
-            <ThemedText type="small" style={{ color: theme.onHighlight, opacity: 0.8 }}>
-              Every book you rank sharpens them. {view.rankedCount} ranked so far.
-            </ThemedText>
-          </View>
-          {view.favoriteTop.length > 0 ? (
-            <View style={styles.fan} pointerEvents="none">
-              {view.favoriteTop.map((e, i) => (
-                <View
-                  key={e.bookId}
-                  style={{
-                    marginLeft: i === 0 ? 0 : -26,
-                    zIndex: i === 1 ? 2 : 1,
-                    transform: [{ rotate: `${(i - 1) * 9}deg` }, { translateY: i === 1 ? -6 : 6 }],
-                  }}>
-                  <BookCover uri={e.book.coverUrl} width={i === 1 ? 74 : 66} />
-                </View>
-              ))}
-            </View>
-          ) : null}
-        </View>
+        <PickedForYou />
 
         {/* Want to read */}
         {view.wantToRead.length > 0 ? (
@@ -314,9 +277,6 @@ const styles = StyleSheet.create({
   bubble: { width: 84, alignItems: 'center' },
   bubbleLabel: { textAlign: 'center', marginTop: Spacing.one + 2, lineHeight: 17, fontWeight: 500 },
   bubbleCount: { textAlign: 'center', fontSize: 12, lineHeight: 16 },
-  highlight: { borderRadius: 24, height: 210, overflow: 'hidden', padding: Spacing.four - 4 },
-  highlightText: { gap: Spacing.one, maxWidth: '80%' },
-  fan: { position: 'absolute', right: 22, bottom: -38, flexDirection: 'row', alignItems: 'flex-end' },
   wantItem: { width: 96 },
   wantTitle: { marginTop: Spacing.one + 2, lineHeight: 18 },
   libraryLink: { flexDirection: 'row', alignItems: 'center', marginTop: Spacing.four },

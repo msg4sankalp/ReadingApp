@@ -19,7 +19,7 @@ function entry(over: Partial<LibraryEntry> & { title?: string } = {}): LibraryEn
     startedAt: null,
     finishedAt: null,
     updatedAt: `2026-11-${String(n).padStart(2, '0')}T00:00:00Z`,
-    book: { title: title ?? `Book ${n}`, authors: [], coverUrl: null, openLibraryKey: null },
+    book: { title: title ?? `Book ${n}`, authors: [], coverUrl: null, openLibraryKey: null, subjects: [] },
     ...rest,
   };
 }

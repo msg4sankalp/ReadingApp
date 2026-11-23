@@ -15,6 +15,8 @@ export interface EntryBook {
   authors: string[];
   coverUrl: string | null;
   openLibraryKey: string | null;
+  /** Open Library subjects; feed the taste profile. */
+  subjects: string[];
 }
 
 /** One book in the user's library. Ranking fields are null until ranked. */
@@ -34,6 +36,8 @@ export interface LibraryEntry {
   updatedAt: string;
   book: EntryBook;
 }
+
+export type RecommendationAction = 'want_to_read' | 'already_read' | 'dismissed';
 
 export interface RankedBook {
   bookId: string;
@@ -71,4 +75,8 @@ export interface LibraryBackend {
   setChips(bookId: string, category: CategorySlug, chipSlugs: string[]): Promise<void>;
   /** Replace a book's start and finish dates ("YYYY-MM-DD" or null). */
   setDates(bookId: string, dates: { startedAt: string | null; finishedAt: string | null }): Promise<void>;
+  /** Record what the reader did with a recommendation (and the score we predicted). */
+  recordFeedback(book: BookSearchResult, action: RecommendationAction, predictedScore: number | null): Promise<void>;
+  /** Open Library keys of recommendations the reader said "Not interested" to. */
+  fetchDismissed(): Promise<Set<string>>;
 }

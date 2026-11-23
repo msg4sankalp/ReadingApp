@@ -239,9 +239,9 @@ never sends inconsistent positions.
 
 ### Phase 3: Taste profile and recommendations
 See **"Recommendation engine"** below for the design. Milestones:
-- [ ] R1. Taste profile: genre affinity and within-genre preferences, shown on Profile
-- [ ] R2. "For You" screen: Open Library candidates, scoring, explanations, feedback buttons (works in demo mode)
-- [ ] R3. "Predicted for you" score on book pages, plus an offline accuracy test on demo data
+- [x] R1. Taste profile: genre affinity and within-genre subject/author weights (not yet shown on Profile)
+- [x] R2. Picked for you (Home card + full screen): Open Library candidates, scoring, reasons, Want to Read / Already read / Not interested
+- [x] R3. "Predicted for you" on book pages; leave-one-out accuracy test (a no-harm guard: the sample reader's rankings are invented, so real accuracy needs real reading history)
 - [ ] R4. AI tagging, taste summaries and description embeddings (needs Supabase for a server function)
 - [ ] R5. Collaborative filtering: "readers like you loved…" (needs real users)
 

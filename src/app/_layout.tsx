@@ -92,6 +92,7 @@ function RootNavigator() {
     <Stack screenOptions={{ headerShadowVisible: false, headerBackTitle: 'Back' }}>
       <Stack.Protected guard={signedIn}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="for-you" options={{ title: 'Picked for you' }} />
         <Stack.Screen name="book/[workId]" options={{ title: '' }} />
         <Stack.Screen name="rank/[workId]" options={{ title: '', presentation: 'modal' }} />
       </Stack.Protected>

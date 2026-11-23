@@ -146,6 +146,17 @@ describe('reading dates', () => {
   });
 });
 
+describe('recommendation feedback', () => {
+  it('remembers dismissed books across restarts', async () => {
+    const storage = memoryStorage();
+    await createDemoBackend(storage).recordFeedback(newBook, 'dismissed', 7.9);
+    const again = createDemoBackend(storage);
+    expect([...(await again.fetchDismissed())]).toEqual([newBook.openLibraryKey]);
+    await again.recordFeedback({ ...newBook, openLibraryKey: '/works/OL998W' }, 'want_to_read', 8.1);
+    expect((await again.fetchDismissed()).size).toBe(1);
+  });
+});
+
 describe('chips', () => {
   it("keeps only the category's chips", async () => {
     const backend = createDemoBackend(memoryStorage());
