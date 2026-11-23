@@ -218,7 +218,8 @@ never sends inconsistent positions.
 - [x] Demo mode with a sample library, for testing the concept without accounts
 - [x] Start and finish dates (Start Reading / Mark Finished log today's local date)
 - [x] Design pass, part 1: "Warm paper" palette (light + dark), Instrument Serif headings with Inter, shared components (pill buttons, chips, cards), new Home screen, all screens restyled
-- [x] Name (Flip) and app icon: terracotta "Flip" wordmark in Instrument Serif with a cream page corner turning over; matching splash (light and dark) and favicon
+- [x] Library tab replaces Rankings: Reading / Want to Read / Read switcher; Read is your rankings with genre chips, Liked/Fine/Didn't like groups, and an All view by score
+- [x] Name (Flip) and app icon: terracotta "Flip" wordmark in Instrument Serif Italic with a cream page corner turning over; matching splash (light and dark) and favicon
 - [ ] Design pass, part 2: ranking-moment polish (animation, haptics, score reveal), empty/loading states, checked on real iOS and Android
 - [ ] Ship to about 10–20 readers through TestFlight or Expo internal distribution
 

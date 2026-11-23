@@ -133,6 +133,44 @@ export function Chip({
   );
 }
 
+/** A pill-shaped switcher, e.g. Reading · Want to Read · Read. */
+export function SegmentedControl<T extends string>({
+  options,
+  value,
+  onChange,
+}: {
+  options: { value: T; label: string }[];
+  value: T;
+  onChange: (value: T) => void;
+}) {
+  const theme = useTheme();
+  return (
+    <View accessibilityRole="tablist" style={[styles.segmented, { backgroundColor: theme.border }]}>
+      {options.map((o) => {
+        const selected = o.value === value;
+        return (
+          <Pressable
+            key={o.value}
+            accessibilityRole="tab"
+            accessibilityState={{ selected }}
+            onPress={() => onChange(o.value)}
+            style={[
+              styles.segment,
+              selected && { backgroundColor: theme.backgroundElement, boxShadow: '0px 1px 3px rgba(0,0,0,0.08)' },
+            ]}>
+            <ThemedText
+              type="small"
+              numberOfLines={1}
+              style={{ color: selected ? theme.text : theme.textSecondary, fontWeight: selected ? 600 : 500 }}>
+              {o.label}
+            </ThemedText>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
 export function Card({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
   const theme = useTheme();
   return <View style={[styles.card, { backgroundColor: theme.backgroundElement }, style]}>{children}</View>;
@@ -303,6 +341,8 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
   },
   card: { borderRadius: Radius.card, padding: Spacing.three },
+  segmented: { flexDirection: 'row', borderRadius: Radius.pill, padding: 3, gap: 2 },
+  segment: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 9, borderRadius: Radius.pill },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'baseline',

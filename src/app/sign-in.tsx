@@ -3,7 +3,7 @@ import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { Button, ErrorText, Screen, TextField } from '@/components/ui';
-import { Spacing } from '@/constants/theme';
+import { FontFamily, Spacing } from '@/constants/theme';
 import { useSession } from '@/lib/auth/session';
 import { isSupabaseConfigured } from '@/lib/supabase/client';
 
@@ -48,7 +48,9 @@ export default function SignInScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.container}>
         <View style={styles.header}>
-          <ThemedText type="title">Flip</ThemedText>
+          <ThemedText type="title" themeColor="accent" style={styles.wordmark}>
+            Flip
+          </ThemedText>
           <ThemedText themeColor="textSecondary">
             Rank what you read, genre by genre.
           </ThemedText>
@@ -108,5 +110,7 @@ export default function SignInScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', gap: Spacing.five },
   header: { gap: Spacing.two },
+  // The logo wordmark: Instrument Serif Italic, matching the app icon.
+  wordmark: { fontFamily: FontFamily.serifItalic, fontSize: 64, lineHeight: 70 },
   form: { gap: Spacing.three },
 });

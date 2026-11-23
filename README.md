@@ -14,10 +14,13 @@ for book data.
 
 ```
 src/app/                  Screens (Expo Router: every file is a route)
-  _layout.tsx             Root: data cache, auth session, signed-in/out route protection
+  _layout.tsx             Root: fonts, data cache, auth session, signed-in/out route protection
   sign-in.tsx             Email + password sign-in and sign-up
-  (tabs)/                 Library, Rankings, Search and Profile tabs (native tab bar)
-  book/[workId].tsx       Book page: details, description, shelf buttons, score
+  (tabs)/index.tsx        Home: continue reading, books to rank, your genres, picked for you
+  (tabs)/library.tsx      Library: Reading, Want to Read, and Read (your rankings, by genre)
+  (tabs)/search.tsx       Search (Open Library)
+  (tabs)/profile.tsx      Profile and stats; demo reset
+  book/[workId].tsx       Book page: details, shelf buttons, dates, score
   rank/[workId].tsx       Ranking flow: genre → feeling → head-to-head → score + reasons
 src/components/           Shared UI (buttons, text fields, book rows and covers)
 src/lib/ranking/          Ranking engine: binary-insertion sessions and score formula

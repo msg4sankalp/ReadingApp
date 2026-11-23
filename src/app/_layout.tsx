@@ -1,4 +1,4 @@
-import { InstrumentSerif_400Regular } from '@expo-google-fonts/instrument-serif';
+import { InstrumentSerif_400Regular, InstrumentSerif_400Regular_Italic } from '@expo-google-fonts/instrument-serif';
 import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
@@ -20,6 +20,7 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [fontsLoaded, fontError] = useFonts({
     InstrumentSerif_400Regular,
+    InstrumentSerif_400Regular_Italic,
     Inter_400Regular,
     Inter_500Medium,
     Inter_600SemiBold,
@@ -91,7 +92,6 @@ function RootNavigator() {
     <Stack screenOptions={{ headerShadowVisible: false, headerBackTitle: 'Back' }}>
       <Stack.Protected guard={signedIn}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="library" options={{ title: 'Library' }} />
         <Stack.Screen name="book/[workId]" options={{ title: '' }} />
         <Stack.Screen name="rank/[workId]" options={{ title: '', presentation: 'modal' }} />
       </Stack.Protected>

@@ -189,14 +189,20 @@ export default function HomeScreen() {
         {/* Genres */}
         {view.genres.length > 0 ? (
           <>
-            <SectionHeader title="Your genres" action="See rankings" onAction={() => router.navigate('/rankings')} />
+            <SectionHeader
+              title="Your genres"
+              action="See rankings"
+              onAction={() => router.navigate({ pathname: '/library', params: { shelf: 'read' } })}
+            />
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.bubbles}>
               {view.genres.map((g) => (
                 <Pressable
                   key={g.category.slug}
                   accessibilityRole="button"
                   accessibilityLabel={`${g.category.name}: ${g.count} ranked`}
-                  onPress={() => router.navigate('/rankings')}
+                  onPress={() =>
+                    router.navigate({ pathname: '/library', params: { shelf: 'read', genre: g.category.slug } })
+                  }
                   style={styles.bubble}>
                   <CoverBubble uri={g.top?.book.coverUrl ?? null} size={76} />
                   <ThemedText type="small" style={styles.bubbleLabel} numberOfLines={2}>
@@ -245,7 +251,11 @@ export default function HomeScreen() {
         {/* Want to read */}
         {view.wantToRead.length > 0 ? (
           <>
-            <SectionHeader title="Want to read" action="See all" onAction={() => router.push('/library')} />
+            <SectionHeader
+              title="Want to read"
+              action="See all"
+              onAction={() => router.navigate({ pathname: '/library', params: { shelf: 'want_to_read' } })}
+            />
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.hRow}>
               {view.wantToRead.map((e) => (
                 <Pressable key={e.bookId} onPress={() => openBook(e)} style={styles.wantItem}>
@@ -260,7 +270,7 @@ export default function HomeScreen() {
         ) : null}
 
         {/* Library link */}
-        <Pressable onPress={() => router.push('/library')} style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}>
+        <Pressable onPress={() => router.navigate('/library')} style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}>
           <Card style={styles.libraryLink}>
             <View style={styles.flex}>
               <ThemedText type="defaultBold">Your library</ThemedText>

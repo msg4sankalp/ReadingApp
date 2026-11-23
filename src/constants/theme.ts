@@ -57,6 +57,8 @@ export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
  */
 export const FontFamily = {
   serif: 'InstrumentSerif_400Regular',
+  /** The Flip wordmark (logo). */
+  serifItalic: 'InstrumentSerif_400Regular_Italic',
   sans: {
     400: 'Inter_400Regular',
     500: 'Inter_500Medium',
