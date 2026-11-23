@@ -216,28 +216,98 @@ never sends inconsistent positions.
 - [ ] Shareable ranking cards (image export), a strong growth channel
 
 ### Phase 3: Taste profile and recommendations
-Taste is modeled on the same two levels as ranking.
-
-**Across genres: which genres you like.** This is never based on comparing scores across genres:
-- **Engagement:** share of books read per category, recent trend, and Want-to-Read additions.
-- **Satisfaction:** bucket mix per category. "You loved 80% of your fantasy, but only 30% of your thrillers."
-- Combined into a per-category **affinity** score.
-
-**Within a genre: what you like inside it.**
-- Every within-category comparison is a training example: winner tags vs. loser tags.
-- A Bradley-Terry / logistic model learns, per user and per category, which tags and attributes push a book up the list. For example, "in SFF, you favor hard SF and slow-burn world-building; in thrillers, fast pace and a twist ending."
-- Chips add the *why* signal on top.
-- With little data, fall back to signals pooled from similar users and from all users (hierarchical shrinkage).
-
-**Recommendations:**
-1. **Content-based (works for one user):** embed book descriptions and tags with `pgvector`. Candidate score = category affinity × within-category tag-model prediction × embedding similarity to the user's top books in that genre.
-2. **Taste summary:** an LLM writes a short description of the reader's taste per genre and overall.
-3. **Collaborative filtering:** once there are a few hundred active users, find readers whose within-genre rankings agree with yours, and suggest what they ranked highly.
-4. **"Predicted score for you"** on every book page, computed in the book's category.
-5. **Recommendation surfaces:** "More like your top fantasy", "A genre you might be missing", and "Stretch picks" (high predicted score in a genre you rarely read).
+See **"Recommendation engine"** below for the design. Milestones:
+- [ ] R1. Taste profile: genre affinity and within-genre preferences, shown on Profile
+- [ ] R2. "For You" screen: Open Library candidates, scoring, explanations, feedback buttons (works in demo mode)
+- [ ] R3. "Predicted for you" score on book pages, plus an offline accuracy test on demo data
+- [ ] R4. AI tagging, taste summaries and description embeddings (needs Supabase for a server function)
+- [ ] R5. Collaborative filtering: "readers like you loved…" (needs real users)
 
 ### Phase 4: Community (Fable-style)
 - Book clubs, reading schedules, chapter-gated discussion threads.
+
+## Recommendation engine
+
+### Goals
+- Suggest what to read next, with a **reason** for every suggestion.
+- Show a **predicted score for you** on any book.
+- Work for a single user from day one, with no other users to learn from, and improve as users arrive.
+- Run in demo mode, so it can be tested against the sample reader's taste.
+
+### Signals we already collect
+
+| Signal | What it tells us | Level |
+|---|---|---|
+| Bucket (liked / fine / disliked) | How you felt, comparable across genres | Across genres |
+| Position in a genre list | How a book compares to others you read in that genre | Within genre |
+| Raw comparisons | Direct "A beat B" preferences: the best learning signal | Within genre |
+| "What made it work?" chips | *Why* you liked or disliked it | Within genre |
+| Shelves | Want to Read = intent; Reading = current interest | Both |
+| Books per genre | How much you read each genre | Across genres |
+| Book metadata | Subjects, authors, year, length, description | Book features |
+
+Recommendations use positions and comparisons rather than raw scores, so they
+aren't distorted by how scores are drawn in small lists.
+
+### How it works: candidates → scoring → selection
+
+**1. Candidates: find about 200 unread books worth considering**
+- **From your taste:** take the subjects that run through your top-ranked books in each genre (e.g. "hard science fiction" from *Project Hail Mary* and *The Martian*) and query Open Library for the best-rated books with those subjects. Tested November 2026: subject search sorted by rating works, including narrow subjects.
+- **Authors you loved:** their other books.
+- **Genre staples:** the best-rated books in your favorite genres.
+- **Later:** books that readers similar to you loved (R5) and nearest neighbors by description embedding (R4).
+- **Filters:** already in your library, dismissed before, derivative titles (summaries, study guides), too few ratings to trust, and later volumes of a series when you haven't read the first.
+- Candidates are saved into the shared `books` catalog, which grows it for everyone.
+
+**2. Scoring: a predicted 0–10 score for each candidate, in its genre**
+```
+predicted = genre baseline + taste adjustment + small quality nudge
+```
+- **Genre baseline:** your typical outcome in that genre, from your bucket mix ("you liked 80% of your fantasy"), pulled toward your overall average when you've read few books there.
+- **Taste adjustment:** how much the candidate resembles your top-ranked books in that genre, minus how much it resembles your bottom-ranked ones.
+  - v1: overlapping subjects and authors.
+  - v2: description embeddings.
+  - v3: weights learned from your comparisons. Each "A beat B" teaches which features win for you (a Bradley-Terry model).
+- **Quality nudge:** the community rating, as a Bayesian average so books with few ratings aren't over-trusted. Kept small, so popularity doesn't drown out taste.
+- **Confidence:** low when the genre has few ranked books; shown like provisional scores ("~8.4").
+
+**3. Selection: build the list you see**
+- Mostly the highest predicted scores, with diversity rules: at most 2 per author, genres mixed in proportion to how much you read them, and series started from book 1.
+- One **stretch pick**: a strong prediction in a genre you rarely read.
+- **Explanations:** "Because you loved *Project Hail Mary* and *The Martian*" (your most similar top-ranked books), or "You often choose *Ideas* for sci-fi" (from your chips).
+
+### Screens
+- **For You** tab with rows: *Top picks*, *More [genre] like [your #1]*, and a *Stretch pick*.
+- **Book page:** "Predicted for you: 8.4", with the reason.
+- **On every recommendation:** *Want to Read*, *Already read* (goes straight to ranking), and *Not interested* (optional reason: not my genre / not this author / not this book).
+
+### Measuring whether it works
+- **Our built-in advantage:** when you rank a book we recommended, we learn its real score and can compare it with our prediction. Track the average error and whether an "8" really means 8.
+- **Offline test:** hide some of a reader's ranked books, predict them from the rest, and check the predicted order against the real one. This runs on the demo data, so the engine can be tested before any users exist.
+- Also track how often recommendations are added to Want to Read and how often they're dismissed.
+
+### Where it runs
+- **R1–R3: on the device, in TypeScript.** Pure, testable functions like the ranking engine, plus Open Library calls. Libraries are small (hundreds of books), so the computing is trivial. Works in demo mode.
+- **R4–R5: on the server** (Supabase Edge Functions + `pgvector`), once embeddings, AI calls (an API key can't live in the app) and other users' data are involved. Recommendations get precomputed in the background.
+
+### Data model additions
+```sql
+recommendation_feedback (user_id, book_id, action: want_to_read | already_read | dismissed,
+                         reason text, predicted_score numeric(3,1), created_at)
+book_embeddings         (book_id, model, embedding vector)          -- R4
+```
+
+### AI's role (R4)
+- **Tag books** with a controlled vocabulary (subgenre, pace, tone, themes) from their descriptions, once per book and shared by everyone. This fixes noisy Open Library subjects (e.g. Stephen King's *Full Dark, No Stars* is tagged "cozy mystery").
+- **Write taste summaries:** "In sci-fi you love problem-solving and big ideas; you're lukewarm on romance-led fantasy."
+- **Polish explanations** for a short list of top candidates.
+- Cost: a few cents per few hundred books with a small model.
+
+### Known pitfalls
+- **Noisy subjects:** a few wrong subjects shouldn't move a prediction much; AI tagging (R4) is the real fix.
+- **Series:** Open Library doesn't mark series reliably (*Death's End*, book 3, ranks above book 1). Use title patterns at first.
+- **Popularity bias:** sorting by reading counts returns Harry Potter for everything, so sort by rating and keep the popularity term small.
+- **Too little data:** one loved book shouldn't define a whole genre. Shrink predictions toward the baseline until there are several ranked books.
 
 ## Costs (approximate; check current pricing)
 
