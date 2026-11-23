@@ -23,6 +23,7 @@ const SEARCH_FIELDS = [
   'subject',
   'isbn',
   'number_of_pages_median',
+  'edition_count',
 ].join(',');
 
 export interface BookSearchResult {
@@ -68,6 +69,7 @@ interface RawSearchDoc {
   subject?: string[];
   isbn?: string[];
   number_of_pages_median?: number;
+  edition_count?: number;
 }
 
 interface RawWork {
@@ -110,7 +112,9 @@ export function createOpenLibraryClient(options: OpenLibraryClientOptions = {}) 
       if (q.length < 2) return [];
       const params = new URLSearchParams({ q, fields: SEARCH_FIELDS, limit: String(limit) });
       const data = await getJson<{ docs?: RawSearchDoc[] }>(`/search.json?${params}`, signal);
-      return (data.docs ?? []).map(normalizeSearchDoc).filter((b): b is BookSearchResult => b !== null);
+      return rankSearchDocs(data.docs ?? [])
+        .map(normalizeSearchDoc)
+        .filter((b): b is BookSearchResult => b !== null);
     },
 
     async getWork(openLibraryKey: string, { signal }: { signal?: AbortSignal } = {}): Promise<WorkDetails> {
@@ -131,6 +135,23 @@ export const openLibrary = createOpenLibraryClient();
 
 export function coverUrl(coverId: number, size: CoverSize = 'M'): string {
   return `${COVERS_URL}/b/id/${coverId}-${size}.jpg`;
+}
+
+/**
+ * Open Library ranks by text match, so an obscure one-edition record with no
+ * cover (often a summary or study guide, e.g. "Becoming Michelle Obama" by
+ * someone else) can outrank the real book. Keep Open Library's order, but move
+ * likely-junk records below established ones.
+ */
+export function rankSearchDocs(docs: RawSearchDoc[]): RawSearchDoc[] {
+  const isEstablished = (d: RawSearchDoc) => Boolean(d.cover_i) || (d.edition_count ?? 0) >= 3;
+  const looksDerivative = (d: RawSearchDoc) =>
+    /^(summary|study guide|analysis|workbook|sparknotes|cliffsnotes)\b/i.test(d.title ?? '');
+  const tier = (d: RawSearchDoc) => (looksDerivative(d) ? 2 : isEstablished(d) ? 0 : 1);
+  return docs
+    .map((doc, index) => ({ doc, index, tier: tier(doc) }))
+    .sort((a, b) => a.tier - b.tier || a.index - b.index)
+    .map((x) => x.doc);
 }
 
 export function normalizeSearchDoc(doc: RawSearchDoc): BookSearchResult | null {

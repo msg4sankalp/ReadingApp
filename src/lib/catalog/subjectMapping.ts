@@ -17,16 +17,21 @@ interface Rule {
 }
 
 const RULES: Rule[] = [
-  // Formats override genre: a graphic memoir is ranked with graphic novels.
-  { category: 'graphic-novels', pattern: /graphic novel|comic|manga|cartoons and comics/, weight: 6 },
-  { category: 'poetry', pattern: /\bpoe(try|ms)\b|\bverse\b|\bsonnets?\b/, weight: 5 },
+  // Formats. A format wins outright only when a real share of subjects point to
+  // it (see FORMAT_SHARE). Popular books often carry a few stray "Comic books"
+  // subjects from a graphic adaptation (The Hobbit: 4 of 93), while real graphic
+  // novels carry many (Persepolis: 9 of 62; Maus: 21 of 82).
+  { category: 'graphic-novels', pattern: /graphic novel|comic|manga|cartoons and comics/, weight: 3 },
+  { category: 'poetry', pattern: /\bpoe(try|ms)\b|\bverse\b|\bsonnets?\b/, weight: 3 },
 
-  // Fiction genres
-  { category: 'historical-fiction', pattern: /historical fiction|fiction,? historical|historical novel/, weight: 4 },
+  // Fiction genres. Historical fiction is weighted low because "historical" is
+  // usually a setting: a historical horror or romance should compete in Horror
+  // or Romance, and only plain historical novels should land here.
+  { category: 'historical-fiction', pattern: /historical fiction|fiction,? historical|historical novel/, weight: 2 },
   { category: 'sff', pattern: /science fiction|fantasy|space opera|dystopia|cyberpunk|time travel|dragons|magic|wizards/, weight: 3 },
   { category: 'mystery-thriller', pattern: /myster|detective|thriller|suspense|crime|murder|espionage|spy stories/, weight: 3 },
   { category: 'romance', pattern: /romance|love stories|romantic/, weight: 3 },
-  { category: 'horror', pattern: /horror|ghost stories|supernatural|vampires|zombies|haunted/, weight: 3 },
+  { category: 'horror', pattern: /horror|ghost|gothic|supernatural|vampires|zombies|haunted/, weight: 3 },
   { category: 'literary-fiction', pattern: /literary fiction|fiction,? literary|domestic fiction|psychological fiction|coming of age|bildungsroman/, weight: 2 },
 
   // Nonfiction
@@ -48,6 +53,10 @@ const FICTION_CATEGORIES = new Set<CategorySlug>(
 const NONFICTION_CATEGORIES = new Set<CategorySlug>(
   CATEGORIES.filter((c) => c.group === 'nonfiction').map((c) => c.slug),
 );
+const FORMAT_CATEGORIES: readonly CategorySlug[] = ['graphic-novels', 'poetry'];
+/** A format wins outright with at least this share of subjects (and 2+ matches). */
+const FORMAT_SHARE = 0.1;
+
 const CATEGORY_ORDER = new Map(CATEGORIES.map((c, i) => [c.slug, i]));
 
 export interface CategorySuggestion {
@@ -63,13 +72,30 @@ export function suggestCategory(subjects: readonly string[]): CategorySuggestion
   const isFiction = normalized.some((s) => FICTION_HINT.test(s) && !NOT_FICTION.test(s));
   const isNonfiction = normalized.some((s) => NONFICTION_HINT.test(s));
 
-  const totals = new Map<CategorySlug, number>();
+  // Count matching subjects per category, then apply diminishing returns.
+  // Open Library often lists near-duplicates ("Fiction, historical",
+  // "Fiction, historical, general", "Historical Fiction"), which shouldn't
+  // outweigh several distinct signals for another genre.
+  const matches = new Map<CategorySlug, { weight: number; count: number }>();
   for (const subject of normalized) {
     for (const rule of RULES) {
       if (rule.pattern.test(subject)) {
-        totals.set(rule.category, (totals.get(rule.category) ?? 0) + rule.weight);
+        const m = matches.get(rule.category) ?? { weight: 0, count: 0 };
+        matches.set(rule.category, { weight: Math.max(m.weight, rule.weight), count: m.count + 1 });
       }
     }
+  }
+  // Formats override genre: a graphic memoir is ranked with graphic novels.
+  for (const format of FORMAT_CATEGORIES) {
+    const m = matches.get(format);
+    if (m && m.count >= 2 && m.count / normalized.length >= FORMAT_SHARE) {
+      return { category: format, strength: m.weight * (1 + Math.log2(m.count)) };
+    }
+  }
+
+  const totals = new Map<CategorySlug, number>();
+  for (const [category, { weight, count }] of matches) {
+    totals.set(category, weight * (1 + Math.log2(count)));
   }
 
   // A novel set in WW2 is historical fiction, not history. A history of

@@ -48,6 +48,19 @@ describe('search', () => {
     ]);
   });
 
+  it('moves obscure and derivative records below the real book, otherwise keeping order', async () => {
+    // Shaped like the real top 3 results for "Becoming Michelle Obama".
+    const docs = [
+      { key: '/works/OL29922995W', title: 'Becoming Michelle Obama', edition_count: 1 },
+      { key: '/works/OL17930367W', title: 'Becoming', edition_count: 44, cover_i: 8824664 },
+      { key: '/works/OL25607554W', title: 'Summary of Becoming by Michelle Obama', edition_count: 1 },
+      { key: '/works/OL4W', title: 'Becoming (Another)', edition_count: 5 },
+    ];
+    const client = createOpenLibraryClient({ fetchImpl: mockFetch({ docs }) });
+    const keys = (await client.search('becoming michelle obama')).map((b) => b.openLibraryKey);
+    expect(keys).toEqual(['/works/OL17930367W', '/works/OL4W', '/works/OL29922995W', '/works/OL25607554W']);
+  });
+
   it('skips the network for queries shorter than 2 characters', async () => {
     const fetchImpl = mockFetch({ docs: [] });
     const client = createOpenLibraryClient({ fetchImpl });

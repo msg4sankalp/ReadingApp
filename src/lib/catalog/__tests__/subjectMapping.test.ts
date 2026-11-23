@@ -7,7 +7,7 @@ describe('suggestCategory', () => {
     ['Dune', ['Science fiction', 'Fiction, science fiction, general', 'Dune (Imaginary place)'], 'sff'],
     ['The Hobbit', ['Fantasy fiction', 'Middle Earth (Imaginary place)', 'Fiction'], 'sff'],
     ['Gone Girl', ['Fiction', 'Missing persons', 'Fiction, thrillers, suspense', 'Psychological fiction'], 'mystery-thriller'],
-    ['Pride and Prejudice', ['Love stories', 'Courtship', 'Domestic fiction', 'England, fiction'], 'romance'],
+    ['Pride and Prejudice (older record)', ['Love stories', 'Courtship', 'Domestic fiction', 'England, fiction'], 'romance'],
     ['The Shining', ['Fiction', 'Horror tales', 'Haunted hotels'], 'horror'],
     ['All the Light We Cannot See', ['World War, 1939-1945', 'Fiction', 'Historical fiction'], 'historical-fiction'],
     ['Untagged WW2 novel', ['World War, 1939-1945', 'Fiction'], 'historical-fiction'],
@@ -20,6 +20,19 @@ describe('suggestCategory', () => {
     ['Maus', ['Graphic novels', 'Holocaust, Jewish (1939-1945)', 'Biography', 'Comic books, strips, etc.'], 'graphic-novels'],
     ['Beloved', ['Fiction', 'Psychological fiction', 'Slavery'], 'literary-fiction'],
     ['Generic novel', ['Fiction'], 'literary-fiction'],
+    // Real Open Library subjects (November 2026). Historical setting, but horror.
+    ['Mexican Gothic', ['English literature', 'nyt:combined-print-and-e-book-fiction=2020-07-19',
+      'New York Times bestseller', 'Fiction, gothic', 'Fiction, historical', 'Mexico, fiction',
+      'Fiction, historical, general', 'Haunted houses', 'Fiction', 'Families', 'Family secrets', 'Gothic',
+      'Horror', 'Ghosts', 'Historical Fiction', 'Mystery', 'Fantasy', 'Thriller', 'Historical'], 'horror'],
+    // A graphic memoir is ranked with graphic novels.
+    ['Persepolis', ['Comic books, strips, etc.', 'Graphic novels', 'Autobiography', 'Biography', 'Iran',
+      'Women', 'Revolution', 'History', 'Childhood', 'Islam'], 'graphic-novels'],
+    // A popular book with a few stray subjects from its graphic adaptation is not a graphic novel.
+    ['The Hobbit (with adaptation subjects)', ['Fantasy', 'Fantasy fiction', 'Fiction', 'Dragons', 'Wizards',
+      'Graphic novels', 'Comic books, strips', ...Array.from({ length: 30 }, (_, i) => `Topic ${i}`)], 'sff'],
+    // Historical romance competes with romance.
+    ['Pride and Prejudice', ['Fiction, Romance, Historical, Regency', 'Love stories', 'Historical fiction'], 'romance'],
   ];
 
   it.each(cases)('%s', (_title, subjects, expected) => {
