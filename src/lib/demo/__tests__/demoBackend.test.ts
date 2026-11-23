@@ -105,6 +105,40 @@ describe('ranking', () => {
   });
 });
 
+describe('reading dates', () => {
+  it('logs start and finish dates through the shelf lifecycle', async () => {
+    let clock = new Date(2026, 10, 1, 9, 0);
+    const backend = createDemoBackend(memoryStorage(), () => clock);
+
+    await backend.setShelf(newBook, 'want_to_read');
+    expect(await backend.fetchEntryForWork(newBook.openLibraryKey)).toMatchObject({ startedAt: null, finishedAt: null });
+
+    await backend.setShelf(newBook, 'reading');
+    expect(await backend.fetchEntryForWork(newBook.openLibraryKey)).toMatchObject({
+      startedAt: '2026-11-01',
+      finishedAt: null,
+    });
+
+    clock = new Date(2026, 10, 23, 23, 30); // late evening: still the 23rd locally
+    await backend.setShelf(newBook, 'read');
+    await backend.rankBook({ bookId: newBook.openLibraryKey, category: 'sff', bucket: 'liked', position: 0, comparisons: [] });
+    expect(await backend.fetchEntryForWork(newBook.openLibraryKey)).toMatchObject({
+      startedAt: '2026-11-01',
+      finishedAt: '2026-11-23',
+    });
+  });
+
+  it('seeds dates for the sample library', async () => {
+    const library = await createDemoBackend(memoryStorage()).fetchLibrary();
+    for (const e of library) {
+      if (e.status === 'read') expect(e.finishedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      if (e.status === 'reading') expect(e.startedAt).not.toBeNull();
+      if (e.status === 'want_to_read') expect([e.startedAt, e.finishedAt]).toEqual([null, null]);
+      if (e.startedAt && e.finishedAt) expect(e.startedAt <= e.finishedAt).toBe(true);
+    }
+  });
+});
+
 describe('chips', () => {
   it("keeps only the category's chips", async () => {
     const backend = createDemoBackend(memoryStorage());

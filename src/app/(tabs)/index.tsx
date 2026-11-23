@@ -5,6 +5,7 @@ import { ActivityIndicator, RefreshControl, SectionList, StyleSheet, View } from
 import { ThemedText } from '@/components/themed-text';
 import { BookRow, Button, Centered, ErrorText, Screen } from '@/components/ui';
 import { BottomTabInset, Spacing } from '@/constants/theme';
+import { formatReadingDate } from '@/lib/library/readingDates';
 import { SHELVES, type LibraryEntry } from '@/lib/library/types';
 import { useLibrary, workIdFromKey } from '@/lib/library/hooks';
 import { formatScore } from '@/lib/ranking';
@@ -71,6 +72,16 @@ export default function LibraryScreen() {
   );
 }
 
+function libraryDetail(entry: LibraryEntry): string | null {
+  if (entry.status === 'reading' && entry.startedAt) return `Started ${formatReadingDate(entry.startedAt)}`;
+  if (entry.status !== 'read') return null;
+  const parts = [
+    entry.finishedAt ? `Finished ${formatReadingDate(entry.finishedAt)}` : null,
+    entry.score === null ? 'Not ranked yet: tap to rank' : null,
+  ];
+  return parts.filter(Boolean).join(' · ') || null;
+}
+
 function LibraryRow({ entry }: { entry: LibraryEntry }) {
   const { book } = entry;
   return (
@@ -78,7 +89,7 @@ function LibraryRow({ entry }: { entry: LibraryEntry }) {
       title={book.title}
       authors={book.authors}
       coverUrl={book.coverUrl}
-      detail={entry.status === 'read' && entry.score === null ? 'Not ranked yet: tap to rank' : null}
+      detail={libraryDetail(entry)}
       trailing={
         entry.score !== null ? <ThemedText type="smallBold">{formatScore(entry.score)}</ThemedText> : null
       }

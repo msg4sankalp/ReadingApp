@@ -28,6 +28,9 @@ export interface LibraryEntry {
   score: number | null;
   /** "What made it work?" chip slugs. */
   chips: string[];
+  /** Local calendar days, "YYYY-MM-DD". See readingDates.ts. */
+  startedAt: string | null;
+  finishedAt: string | null;
   updatedAt: string;
   book: EntryBook;
 }

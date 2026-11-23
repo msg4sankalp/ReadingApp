@@ -6,9 +6,17 @@ import { ThemedText } from '@/components/themed-text';
 import { BookCover, Button, Centered, ErrorText, Screen } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { getCategory } from '@/lib/catalog/categories';
-import { SHELVES } from '@/lib/library/types';
+import { describeReadingDates } from '@/lib/library/readingDates';
+import type { ReadingStatus } from '@/lib/library/types';
 import { useBook, useLibrary, useLibraryEntry, useSetShelf, useWorkDetails, workKeyFromId } from '@/lib/library/hooks';
 import { formatScore, isProvisional } from '@/lib/ranking';
+
+/** Shelf buttons in reading order: an action until chosen, then the current state. */
+const BOOK_ACTIONS: { status: ReadingStatus; action: string; active: string }[] = [
+  { status: 'want_to_read', action: 'Want to Read', active: 'Want to Read' },
+  { status: 'reading', action: 'Start Reading', active: 'Reading' },
+  { status: 'read', action: 'Mark Finished', active: 'Finished' },
+];
 
 export default function BookScreen() {
   const { workId } = useLocalSearchParams<{ workId: string }>();
@@ -81,11 +89,11 @@ export default function BookScreen() {
         </View>
 
         <View style={styles.shelves}>
-          {SHELVES.map((shelf) => (
+          {BOOK_ACTIONS.map((shelf) => (
             <Button
               key={shelf.status}
               variant="secondary"
-              label={shelf.label}
+              label={currentStatus === shelf.status ? shelf.active : shelf.action}
               selected={currentStatus === shelf.status}
               loading={setShelf.isPending && setShelf.variables?.status === shelf.status}
               disabled={setShelf.isPending || entry.isPending}
@@ -106,6 +114,11 @@ export default function BookScreen() {
           ))}
         </View>
         {setShelf.isError ? <ErrorText error={setShelf.error} /> : null}
+        {entry.data && describeReadingDates(entry.data) ? (
+          <ThemedText type="small" themeColor="textSecondary">
+            {describeReadingDates(entry.data)}
+          </ThemedText>
+        ) : null}
         {ranked && ranked.category ? (
           <View style={styles.rankedBox}>
             <View style={styles.flex}>

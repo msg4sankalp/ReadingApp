@@ -11,6 +11,7 @@
 
 import type { BookSearchResult } from '@/lib/books/openLibrary';
 import { getCategory, type CategorySlug } from '@/lib/catalog/categories';
+import { datesForShelfChange, localDateString } from '@/lib/library/readingDates';
 import type { LibraryBackend, LibraryEntry, RankInput, RankedBook, ReadingStatus } from '@/lib/library/types';
 import { scoreForPosition, type Bucket, type Comparison } from '@/lib/ranking';
 
@@ -30,6 +31,9 @@ interface DemoEntry {
   bucket: Bucket | null;
   position: number | null;
   chips: string[];
+  /** Missing in demo data saved before dates existed. */
+  startedAt?: string | null;
+  finishedAt?: string | null;
   updatedAt: string;
 }
 
@@ -53,17 +57,34 @@ export function createSeedState(now: Date = new Date()): DemoState {
   for (const b of DEMO_BOOKS) books[b.openLibraryKey] = b;
 
   const entries: DemoState['entries'] = {};
-  let minutesAgo = 60 * 24 * 90;
-  const stamp = () => new Date(now.getTime() - (minutesAgo -= 60 * 24 * 2) * 60_000).toISOString();
+  // Books were finished every couple of days, each taking a week or two.
+  let daysAgo = 90;
+  const day = (offset: number) => new Date(now.getFullYear(), now.getMonth(), now.getDate() - offset);
+  const next = () => {
+    daysAgo -= 2;
+    const finished = day(daysAgo);
+    const started = day(daysAgo + 7 + (daysAgo % 9));
+    return { updatedAt: finished.toISOString(), finishedAt: localDateString(finished), startedAt: localDateString(started) };
+  };
 
   for (const list of DEMO_RANKINGS) {
     list.books.forEach((key, position) => {
-      entries[key] = { status: 'read', category: list.category, bucket: list.bucket, position, chips: [], updatedAt: stamp() };
+      entries[key] = { status: 'read', category: list.category, bucket: list.bucket, position, chips: [], ...next() };
     });
   }
   for (const shelf of DEMO_SHELVES) {
     for (const key of shelf.books) {
-      entries[key] = { status: shelf.status, category: null, bucket: null, position: null, chips: [], updatedAt: stamp() };
+      const { updatedAt, startedAt, finishedAt } = next();
+      entries[key] = {
+        status: shelf.status,
+        category: null,
+        bucket: null,
+        position: null,
+        chips: [],
+        updatedAt,
+        startedAt: shelf.status === 'want_to_read' ? null : startedAt,
+        finishedAt: shelf.status === 'read' ? finishedAt : null,
+      };
     }
   }
   return { version: 1, books, entries, comparisons: [] };
@@ -128,6 +149,8 @@ export function createDemoBackend(
       rankPosition: e.position,
       score: scoreOf(bookId),
       chips: [...e.chips],
+      startedAt: e.startedAt ?? null,
+      finishedAt: e.finishedAt ?? null,
       updatedAt: e.updatedAt,
       book: { title: b.title, authors: b.authors, coverUrl: b.coverUrl, openLibraryKey: b.openLibraryKey },
     };
@@ -168,13 +191,30 @@ export function createDemoBackend(
     async setShelf(book, status) {
       const id = ensure(book);
       const e = state.entries[id];
+      const today = localDateString(now());
       if (!e) {
-        state.entries[id] = { status, category: null, bucket: null, position: null, chips: [], updatedAt: '' };
+        state.entries[id] = {
+          status,
+          category: null,
+          bucket: null,
+          position: null,
+          chips: [],
+          updatedAt: '',
+          ...datesForShelfChange(null, status, today),
+        };
       } else if (e.status === status) {
         return;
       } else {
         // Only read books can be ranked.
         if (status !== 'read') removeFromList(id);
+        Object.assign(
+          e,
+          datesForShelfChange(
+            { status: e.status, startedAt: e.startedAt ?? null, finishedAt: e.finishedAt ?? null },
+            status,
+            today,
+          ),
+        );
         e.status = status;
       }
       touch(id);
@@ -199,6 +239,7 @@ export function createDemoBackend(
       }
       list.splice(position, 0, bookId);
 
+      // Like rank_book(): ranking marks the book read, keeping any finish date.
       const existing = state.entries[bookId];
       state.entries[bookId] = {
         status: 'read',
@@ -206,6 +247,8 @@ export function createDemoBackend(
         bucket,
         position,
         chips: existing?.chips ?? [],
+        startedAt: existing?.startedAt ?? null,
+        finishedAt: existing?.finishedAt ?? localDateString(now()),
         updatedAt: '',
       };
       list.forEach((id, i) => {

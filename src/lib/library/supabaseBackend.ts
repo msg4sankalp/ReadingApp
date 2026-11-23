@@ -9,10 +9,11 @@ import { isCategorySlug, type CategorySlug } from '@/lib/catalog/categories';
 import type { Bucket } from '@/lib/ranking';
 import { supabase } from '@/lib/supabase/client';
 
+import { datesForShelfChange, localDateString } from './readingDates';
 import type { LibraryBackend, LibraryEntry, RankedBook, ReadingStatus } from './types';
 
 const ENTRY_SELECT = `
-  book_id, status, bucket, rank_position, score, updated_at,
+  book_id, status, bucket, rank_position, score, started_at, finished_at, updated_at,
   category:categories(slug),
   chips:user_book_chips(chip:category_chips(slug)),
   book:books!inner(title, authors, cover_url, open_library_key)
@@ -24,6 +25,8 @@ interface EntryRow {
   bucket: Bucket | null;
   rank_position: number | null;
   score: number | string | null;
+  started_at: string | null;
+  finished_at: string | null;
   updated_at: string;
   category: { slug: string } | null;
   chips: { chip: { slug: string } | null }[] | null;
@@ -40,6 +43,8 @@ function toEntry(row: EntryRow): LibraryEntry {
     rankPosition: row.rank_position,
     score: row.score === null ? null : Number(row.score),
     chips: (row.chips ?? []).flatMap((c) => (c.chip ? [c.chip.slug] : [])),
+    startedAt: row.started_at,
+    finishedAt: row.finished_at,
     updatedAt: row.updated_at,
     book: {
       title: row.book.title,
@@ -135,18 +140,31 @@ export function createSupabaseBackend(userId: string): LibraryBackend {
       const bookId = await ensureBook(book);
       const { data: existing, error: readError } = await supabase
         .from('user_books')
-        .select('status, bucket')
+        .select('status, bucket, started_at, finished_at')
         .eq('user_id', userId)
         .eq('book_id', bookId)
         .maybeSingle();
       if (readError) throw readError;
 
+      const today = localDateString();
       if (!existing) {
-        const { error } = await supabase.from('user_books').insert({ user_id: userId, book_id: bookId, status });
+        const dates = datesForShelfChange(null, status, today);
+        const { error } = await supabase.from('user_books').insert({
+          user_id: userId,
+          book_id: bookId,
+          status,
+          started_at: dates.startedAt,
+          finished_at: dates.finishedAt,
+        });
         if (error) throw error;
         return;
       }
       if (existing.status === status) return;
+      const dates = datesForShelfChange(
+        { status: existing.status, startedAt: existing.started_at, finishedAt: existing.finished_at },
+        status,
+        today,
+      );
 
       // Only read books can be ranked.
       if (existing.bucket && status !== 'read') {
@@ -155,7 +173,7 @@ export function createSupabaseBackend(userId: string): LibraryBackend {
       }
       const { error } = await supabase
         .from('user_books')
-        .update({ status })
+        .update({ status, started_at: dates.startedAt, finished_at: dates.finishedAt })
         .eq('user_id', userId)
         .eq('book_id', bookId);
       if (error) throw error;

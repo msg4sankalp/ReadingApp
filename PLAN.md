@@ -206,6 +206,8 @@ never sends inconsistent positions.
 - [x] "My Rankings" screen: per-genre lists, plus an "All books" view; provisional-score badges
 - [x] Profile screen with basic stats
 - [x] Demo mode with a sample library, for testing the concept without accounts
+- [x] Start and finish dates (Start Reading / Mark Finished log today's local date)
+- [ ] **Design pass** before testers: name and identity, app icon, colors and type, shared components, ranking-moment polish (animation, haptics, score reveal), empty/loading states, dark mode, checked on real iOS and Android
 - [ ] Ship to about 10–20 readers through TestFlight or Expo internal distribution
 
 ### Phase 2: Social
