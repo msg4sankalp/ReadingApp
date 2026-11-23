@@ -19,7 +19,7 @@ recommendations.
 
 | Layer | Choice | Why |
 |---|---|---|
-| App | **Expo (React Native) + TypeScript + Expo Router** | One codebase for iOS and Android; test on your phone with Expo Go; EAS Build handles app store releases later |
+| App | **Expo (React Native) + TypeScript + Expo Router** | One codebase for iOS and Android; test on your phone with Expo Go. Expo is free and open source |
 | Backend | **Supabase** (Postgres, Auth, Storage, Edge Functions) | Real relational DB; Row Level Security; free tier is generous; `pgvector` for recommendations later |
 | Book data | **Open Library API** (later add Google Books) | Free, no API key. Cache every book we touch in our own `books` table |
 | Local state | TanStack Query | Caching, retries, and optimistic updates for server data |
@@ -30,6 +30,11 @@ recommendations.
 - Keep the raw comparison history, not just final positions.
 - Use our own book IDs and map external IDs to them (Open Library, ISBN, Google Books), so we never depend on one provider.
 - Use TypeScript everywhere, and generate DB types from Supabase.
+
+**About Expo and EAS:** Expo (the framework, Expo Go, the CLI) is free and open
+source. EAS, Expo's cloud build service, is **optional**: build locally for free
+(`npx expo run:android`; iOS builds need a Mac), or use EAS's free tier when you
+don't have a Mac. Paid EAS is a convenience, never a requirement.
 
 **Intentionally deferred:** custom backend server, ML infrastructure, web app,
 push notifications, monetization.
@@ -179,18 +184,20 @@ Row Level Security:
 - `books`, `tags` and `categories`: readable by everyone. Writes happen through server functions, to keep the catalog clean.
 
 Rank positions are rewritten in one transaction by a Postgres function
-(`insert_ranked_book(user, book, category, bucket, position)`), so the client
+(`rank_book(book, category, bucket, position, comparisons)`, plus `unrank_book`), so the client
 never sends inconsistent positions.
 
 ## Roadmap
 
 ### Phase 0: Foundations
-- [ ] Set up Expo + TypeScript + Expo Router; configure lint and formatting
-- [ ] Create a Supabase project, add the initial migration (schema above), and enable RLS
+- [x] Set up Expo + TypeScript + Expo Router; configure lint and formatting
+- [x] Write the initial migration (schema above) with RLS and ranking functions
+- [ ] Create the Supabase project and apply the migration and seed
 - [ ] Add email and Apple/Google sign-in through Supabase Auth
-- [ ] Build an Open Library search client and cache books in our DB
-- [ ] Seed categories and chips; map Open Library subjects to a default category
-- [ ] Build the ranking engine as a pure TypeScript module, with Jest tests
+- [ ] Replace the Expo starter screens with the app's tab layout
+- [x] Build an Open Library search client and cache books in our DB
+- [x] Seed categories and chips; map Open Library subjects to a default category
+- [x] Build the ranking engine as a pure TypeScript module, with Jest tests
 
 ### Phase 1: Personal library (the MVP)
 - [ ] Book search screen and book detail screen
@@ -230,6 +237,15 @@ Taste is modeled on the same two levels as ranking.
 
 ### Phase 4: Community (Fable-style)
 - Book clubs, reading schedules, chapter-gated discussion threads.
+
+## Costs (approximate; check current pricing)
+
+| Stage | Cost |
+|---|---|
+| Building and testing | **$0/month**: Supabase free tier, Expo Go, Open Library. Free Supabase projects pause after about a week idle |
+| Testers and app stores | Apple Developer Program **$99/year** (TestFlight, App Store); Google Play **$25 one-time** |
+| Real users | Supabase Pro about **$25/month** (no pausing, backups). Optional: paid EAS, a domain (about $10–20/year) |
+| Recommendations (Phase 3) | LLM tagging and embeddings: one-time per book, cheap with a small model |
 
 ## Learning milestones
 
