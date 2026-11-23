@@ -193,15 +193,15 @@ never sends inconsistent positions.
 - [x] Set up Expo + TypeScript + Expo Router; configure lint and formatting
 - [x] Write the initial migration (schema above) with RLS and ranking functions
 - [ ] Create the Supabase project and apply the migration and seed
-- [ ] Add email and Apple/Google sign-in through Supabase Auth
-- [ ] Replace the Expo starter screens with the app's tab layout
+- [x] Add email sign-in through Supabase Auth (Apple/Google later)
+- [x] Replace the Expo starter screens with the app's tab layout
 - [x] Build an Open Library search client and cache books in our DB
 - [x] Seed categories and chips; map Open Library subjects to a default category
 - [x] Build the ranking engine as a pure TypeScript module, with Jest tests
 
 ### Phase 1: Personal library (the MVP)
-- [ ] Book search screen and book detail screen
-- [ ] Shelves: Want to Read / Reading / Read
+- [x] Book search screen and book detail screen
+- [x] Shelves: Want to Read / Reading / Read
 - [ ] Comparison flow: category confirm, bucket picker, head-to-head cards, insertion, chips
 - [ ] "My Rankings" screen: per-genre lists, plus an "All books" view; provisional-score badges
 - [ ] Profile screen with basic stats

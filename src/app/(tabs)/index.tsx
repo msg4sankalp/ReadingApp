@@ -1,0 +1,96 @@
+import { router } from 'expo-router';
+import { useMemo } from 'react';
+import { ActivityIndicator, RefreshControl, SectionList, StyleSheet, View } from 'react-native';
+
+import { ThemedText } from '@/components/themed-text';
+import { BookRow, Button, Centered, ErrorText, Screen } from '@/components/ui';
+import { BottomTabInset, Spacing } from '@/constants/theme';
+import { SHELVES, type LibraryEntry } from '@/lib/library/api';
+import { useLibrary, workIdFromKey } from '@/lib/library/hooks';
+import { formatScore } from '@/lib/ranking';
+
+export default function LibraryScreen() {
+  const library = useLibrary();
+
+  const sections = useMemo(() => {
+    const entries = library.data ?? [];
+    return SHELVES.map((shelf) => ({
+      title: shelf.label,
+      data: entries.filter((e) => e.status === shelf.status),
+    })).filter((s) => s.data.length > 0);
+  }, [library.data]);
+
+  if (library.isPending) {
+    return (
+      <Screen>
+        <Centered>
+          <ActivityIndicator />
+        </Centered>
+      </Screen>
+    );
+  }
+
+  if (library.isError) {
+    return (
+      <Screen>
+        <Centered>
+          <ErrorText error={library.error} />
+          <Button variant="secondary" label="Try again" onPress={() => library.refetch()} />
+        </Centered>
+      </Screen>
+    );
+  }
+
+  return (
+    <Screen>
+      <SectionList
+        sections={sections}
+        keyExtractor={(e) => e.book.id}
+        stickySectionHeadersEnabled={false}
+        refreshControl={<RefreshControl refreshing={library.isRefetching} onRefresh={() => { library.refetch(); }} />}
+        contentContainerStyle={{ paddingBottom: BottomTabInset + Spacing.three, flexGrow: 1 }}
+        ListHeaderComponent={
+          <View style={styles.header}>
+            <ThemedText type="subtitle">Library</ThemedText>
+          </View>
+        }
+        ListEmptyComponent={
+          <Centered>
+            <ThemedText themeColor="textSecondary">Your library is empty.</ThemedText>
+            <Button label="Find a book" onPress={() => router.navigate('/search')} />
+          </Centered>
+        }
+        renderSectionHeader={({ section }) => (
+          <ThemedText type="smallBold" themeColor="textSecondary" style={styles.sectionHeader}>
+            {section.title.toUpperCase()} · {section.data.length}
+          </ThemedText>
+        )}
+        renderItem={({ item }) => <LibraryRow entry={item} />}
+      />
+    </Screen>
+  );
+}
+
+function LibraryRow({ entry }: { entry: LibraryEntry }) {
+  const { book } = entry;
+  return (
+    <BookRow
+      title={book.title}
+      authors={book.authors}
+      coverUrl={book.cover_url}
+      detail={entry.status === 'read' && entry.score === null ? 'Not ranked yet' : null}
+      trailing={
+        entry.score !== null ? <ThemedText type="smallBold">{formatScore(Number(entry.score))}</ThemedText> : null
+      }
+      onPress={() =>
+        book.open_library_key &&
+        router.push({ pathname: '/book/[workId]', params: { workId: workIdFromKey(book.open_library_key) } })
+      }
+    />
+  );
+}
+
+const styles = StyleSheet.create({
+  header: { paddingTop: Spacing.three, paddingBottom: Spacing.two },
+  sectionHeader: { paddingTop: Spacing.four, paddingBottom: Spacing.one },
+});

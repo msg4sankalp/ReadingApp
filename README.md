@@ -11,13 +11,19 @@ for book data.
 ## Project layout
 
 ```
-src/app/                  Screens (Expo Router: every file is a route).
-                          Still the Expo starter screens; replaced in Phase 1.
+src/app/                  Screens (Expo Router: every file is a route)
+  _layout.tsx             Root: data cache, auth session, signed-in/out route protection
+  sign-in.tsx             Email + password sign-in and sign-up
+  (tabs)/                 Library, Search and Profile tabs (native tab bar)
+  book/[workId].tsx       Book page: details, description, shelf buttons
+src/components/           Shared UI (buttons, text fields, book rows and covers)
 src/lib/ranking/          Ranking engine: binary-insertion sessions and score formula
 src/lib/catalog/          Ranking categories (genres), "what made it work?" chips,
                           and Open Library subject → category mapping
 src/lib/books/            Open Library client
 src/lib/supabase/         Supabase client
+src/lib/auth/             Sign-in session context
+src/lib/library/          Shelves and catalog: database calls and data hooks
 supabase/migrations/      Database schema, Row Level Security and ranking functions
 supabase/seed.sql         Categories and chips (must match src/lib/catalog/categories.ts)
 ```
@@ -44,14 +50,19 @@ supabase/seed.sql         Categories and chips (must match src/lib/catalog/categ
 
 ## Setting up the database (Supabase)
 
-The app runs without a database for now. You'll need one once we build sign-in
-and rankings.
+The app needs a Supabase project to sign in.
 
 1. Create a free project at [supabase.com](https://supabase.com).
-2. In the project's **SQL Editor**, run the contents of
-   `supabase/migrations/20261123000000_initial_schema.sql`, then `supabase/seed.sql`.
-3. Copy `.env.example` to `.env` and fill in the project URL and anon key from the
-   project's API settings. `.env` is git-ignored. Never put the `service_role` key in the app.
+2. In the project's **SQL Editor**, run these files in order:
+   1. `supabase/migrations/20261123000000_initial_schema.sql`
+   2. `supabase/migrations/20261123000001_explicit_grants.sql`
+   3. `supabase/seed.sql`
+3. For development, turn off **Authentication → Sign In / Providers → Email →
+   Confirm email**, so new accounts can sign in straight away.
+4. Copy `.env.example` to `.env` and fill in the project URL and the
+   **publishable** key (Project Settings → API Keys). `.env` is git-ignored.
+   The publishable key is designed to be public; never put a **secret** key or
+   the database password in the app.
 
 Later we'll switch to the [Supabase CLI](https://supabase.com/docs/guides/cli),
 so migrations are applied with a command instead of copy-paste.
