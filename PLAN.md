@@ -1,4 +1,4 @@
-# ReadingApp — Build Plan
+# Flip — Build Plan
 
 A mobile-first reading app: a Goodreads/Fable-style library and social layer, with
 **Beli-style comparison ranking**. Users never type a score. They compare books
@@ -10,6 +10,7 @@ recommendations.
 
 | Decision | Choice | Notes |
 |---|---|---|
+| Name | **Flip** | Flipping pages; flipping a coin between two books (the head-to-head ranking); flipping your rankings. Tagline: "Rank what you read." |
 | Platform | Mobile-first (iOS + Android) | Web can come later from the same codebase |
 | Team | Solo | Favor managed services and fewer moving parts |
 | Ranking | Comparison-based (binary insertion) | Score is derived, never entered |

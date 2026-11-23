@@ -17,6 +17,7 @@ import { scoreForPosition, type Bucket, type Comparison } from '@/lib/ranking';
 
 import { DEMO_BOOKS, DEMO_RANKINGS, DEMO_SHELVES } from './seedData';
 
+// Kept from the app's working name so existing demo libraries survive the rename to Flip.
 export const DEMO_STORAGE_KEY = 'readingapp.demo.v1';
 
 export interface KeyValueStorage {

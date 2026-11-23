@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "ReadingApp",
-    "slug": "reading-app",
+    "name": "Flip",
+    "slug": "flip",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "readingapp",
+    "scheme": "flipreads",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon"

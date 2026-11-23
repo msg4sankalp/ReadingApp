@@ -1,4 +1,6 @@
-# ReadingApp
+# Flip
+
+*Rank what you read.* (The repository keeps its working name, ReadingApp.)
 
 A mobile reading app: track your books, rank them Beli-style with head-to-head
 comparisons within each genre, and (eventually) get recommendations based on

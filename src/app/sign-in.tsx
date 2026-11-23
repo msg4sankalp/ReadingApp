@@ -48,9 +48,9 @@ export default function SignInScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.container}>
         <View style={styles.header}>
-          <ThemedText type="title">ReadingApp</ThemedText>
+          <ThemedText type="title">Flip</ThemedText>
           <ThemedText themeColor="textSecondary">
-            Rank the books you read, genre by genre.
+            Rank what you read, genre by genre.
           </ThemedText>
         </View>
 
