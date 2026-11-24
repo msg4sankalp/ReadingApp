@@ -71,7 +71,7 @@ export default function BookScreen() {
   return (
     <Screen edges={['left', 'right']}>
       <Stack.Screen options={{ title: b.title }} />
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.content}>
         <View style={styles.hero}>
           <BookCover uri={b.coverUrl?.replace('-M.jpg', '-L.jpg') ?? null} width={140} />
           <View style={styles.heroText}>

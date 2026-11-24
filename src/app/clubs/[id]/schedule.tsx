@@ -85,7 +85,7 @@ export default function ScheduleScreen() {
 
   return (
     <Screen edges={['left', 'right', 'bottom']}>
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <ThemedText type="label" themeColor="textSecondary">
           When
         </ThemedText>

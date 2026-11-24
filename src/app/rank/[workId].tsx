@@ -149,7 +149,7 @@ function RankFlow({
 
   return (
     <Screen edges={['left', 'right', 'bottom']}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.content}>
         {step.kind !== 'compare' && step.kind !== 'done' && (
           <View style={styles.bookHeader}>
             <BookCover uri={book.coverUrl} width={48} />

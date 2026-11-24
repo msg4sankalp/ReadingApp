@@ -40,6 +40,7 @@ export default function ForYouScreen() {
   return (
     <Screen edges={['left', 'right']}>
       <FlatList
+        contentInsetAdjustmentBehavior="automatic"
         data={recommendations}
         keyExtractor={(r) => r.book.openLibraryKey}
         contentContainerStyle={styles.list}

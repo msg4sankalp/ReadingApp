@@ -57,7 +57,7 @@ export default function NewClubScreen() {
 
   return (
     <Screen edges={['left', 'right', 'bottom']}>
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <ThemedText type="label" themeColor="textSecondary">
           Name
         </ThemedText>

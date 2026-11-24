@@ -49,24 +49,29 @@ export default function DiscussionScreen() {
   const replyCount = (postId: string) => posts.filter((p) => p.parentId === postId).length;
   const hiddenCount = posts.filter((p) => p.checkpointId === selected.id).length;
 
+  // Part of the scrolling content, so iOS insets it below the see-through navigation bar.
+  const chipsBar = (
+    <View style={styles.chipsWrap}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+        {checkpoints.map((x, i) => (
+          <Chip
+            key={x.id}
+            label={`${isUnlocked(i, reached) ? '' : '🔒 '}${x.label}${isUnlocked(i, reached) ? ` · ${topLevel(x.id).length}` : ''}`}
+            selected={x.id === selected.id}
+            onPress={() => router.setParams({ cp: x.id })}
+          />
+        ))}
+      </ScrollView>
+    </View>
+  );
+
   return (
     <Screen edges={['left', 'right', 'bottom']}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={90}>
-        <View style={styles.chipsWrap}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
-            {checkpoints.map((x, i) => (
-              <Chip
-                key={x.id}
-                label={`${isUnlocked(i, reached) ? '' : '🔒 '}${x.label}${isUnlocked(i, reached) ? ` · ${topLevel(x.id).length}` : ''}`}
-                selected={x.id === selected.id}
-                onPress={() => router.setParams({ cp: x.id })}
-              />
-            ))}
-          </ScrollView>
-        </View>
-
         {unlocked ? (
           <FlatList
+            contentInsetAdjustmentBehavior="automatic"
+            ListHeaderComponent={chipsBar}
             data={shown}
             keyExtractor={(p) => p.id}
             contentContainerStyle={styles.list}
@@ -87,6 +92,8 @@ export default function DiscussionScreen() {
             )}
           />
         ) : (
+          <ScrollView contentInsetAdjustmentBehavior="automatic">
+            {chipsBar}
           <View style={[styles.lock, { borderColor: theme.border, backgroundColor: theme.backgroundElement }]}>
             <ThemedText type="heading">🔒 {selected.label}</ThemedText>
             <ThemedText themeColor="textSecondary" style={styles.center}>
@@ -103,6 +110,7 @@ export default function DiscussionScreen() {
               onPress={() => unlock.mutate(selectedIndex)}
             />
           </View>
+          </ScrollView>
         )}
 
         {unlocked ? (

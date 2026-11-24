@@ -91,7 +91,7 @@ function ClubHome({ detail, inviteOpen }: { detail: ClubDetail; inviteOpen: bool
           ),
         }}
       />
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <ThemedText type="title">{club.name}</ThemedText>
         <View style={styles.membersRow}>
           <AvatarStack members={members} />

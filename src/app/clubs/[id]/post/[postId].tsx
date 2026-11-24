@@ -53,6 +53,7 @@ export default function ThreadScreen() {
       <Stack.Screen options={{ title: label }} />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={90}>
         <FlatList
+          contentInsetAdjustmentBehavior="automatic"
           data={replies}
           keyExtractor={(p) => p.id}
           contentContainerStyle={styles.list}
